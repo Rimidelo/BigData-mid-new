@@ -1,0 +1,9 @@
+pandas
+numpy
+scikit-learn
+matplotlib
+streamlit
+plotly
+watchdog
+python-dateutil
+Faker
