@@ -1,0 +1,115 @@
+.sla-breach-container {
+  background-color: white;
+  border-radius: 8px;
+  padding: 20px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  margin-bottom: 20px;
+}
+
+.live-data-indicator {
+  display: flex;
+  align-items: center;
+  margin-bottom: 10px;
+  font-size: 14px;
+  color: #4caf50;
+}
+
+.live-data-indicator::before {
+  content: "";
+  display: inline-block;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background-color: #4caf50;
+  margin-right: 8px;
+  animation: pulse 1.5s infinite;
+}
+
+.sla-breach-chart {
+  margin-top: 20px;
+  margin-bottom: 20px;
+  position: relative;
+}
+
+/* Add indicator for real-time updates */
+.sla-breach-chart::after {
+  content: "Live Updates";
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  background-color: rgba(0, 0, 0, 0.6);
+  color: white;
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 12px;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.sla-breach-chart.updating::after {
+  opacity: 1;
+  animation: pulse 1.5s infinite;
+}
+
+@keyframes pulse {
+  0% { opacity: 0.6; }
+  50% { opacity: 1; }
+  100% { opacity: 0.6; }
+}
+
+.sla-breach-insights {
+  background-color: #f8f9fa;
+  border-left: 4px solid #8884d8;
+  padding: 15px;
+  border-radius: 4px;
+}
+
+.sla-breach-insights h3 {
+  margin-top: 0;
+  color: #333;
+}
+
+.sla-breach-insights ul {
+  padding-left: 20px;
+}
+
+.sla-breach-insights li {
+  margin-bottom: 8px;
+  text-align: left;
+}
+
+.loading {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 300px;
+  background-color: white;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  color: #666;
+  font-size: 18px;
+}
+
+.error-message {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 300px;
+  background-color: white;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  color: #d9534f;
+  font-size: 18px;
+  padding: 0 20px;
+  text-align: center;
+}
+
+.error-banner {
+  background-color: #ffebee;
+  color: #d32f2f;
+  padding: 8px 12px;
+  border-radius: 4px;
+  margin-bottom: 15px;
+  font-size: 14px;
+  border-left: 4px solid #d32f2f;
+} 
