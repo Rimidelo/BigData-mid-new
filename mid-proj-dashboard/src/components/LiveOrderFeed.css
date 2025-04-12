@@ -108,6 +108,7 @@
 
 /* Feed items */
 .feed-list {
+  min-height: 200px;
   max-height: 400px;
   overflow-y: auto;
   margin-bottom: 15px;
@@ -117,6 +118,18 @@
   grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
   gap: 1px;
   background-color: #f0f0f0;
+}
+
+.empty-feed {
+  grid-column: 1 / -1;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background-color: white;
+  height: 200px;
+  text-align: center;
+  color: #777;
+  font-style: italic;
 }
 
 .feed-item {

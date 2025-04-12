@@ -17,6 +17,10 @@ const LiveOrderFeed = ({ updateRate = 2000, slaBreachRef, slaTrendRef }) => {
 
   // Start or stop the simulation
   const toggleSimulation = () => {
+    // If stopping the simulation, clear the feed
+    if (isRunning) {
+      setFeedItems([]);
+    }
     setIsRunning(!isRunning);
   };
 
@@ -24,16 +28,6 @@ const LiveOrderFeed = ({ updateRate = 2000, slaBreachRef, slaTrendRef }) => {
   const changeSpeed = (multiplier) => {
     setSpeedMultiplier(multiplier);
   };
-
-  // Initialize feed with some sample data
-  useEffect(() => {
-    // Add a few initial orders for illustration
-    const initialOrders = Array(3)
-      .fill(null)
-      .map(() => generateLiveOrder());
-    
-    setFeedItems(initialOrders);
-  }, []);
 
   // Run the simulation loop
   useEffect(() => {
@@ -177,29 +171,35 @@ const LiveOrderFeed = ({ updateRate = 2000, slaBreachRef, slaTrendRef }) => {
       </div>
       
       <div className="feed-list">
-        {feedItems.map((item, index) => (
-          <div 
-            key={index} 
-            className={`feed-item ${isSLABreach(item.delivery_minutes) ? 'sla-breach' : ''}`}
-          >
-            <div className="order-status">
-              <span className="emoji">{getStatusIcon(item.status)}</span>
-              <span className="order-time">{formatTimestamp(item.timestamp)}</span>
+        {feedItems.length > 0 ? (
+          feedItems.map((item, index) => (
+            <div 
+              key={index} 
+              className={`feed-item ${isSLABreach(item.delivery_minutes) ? 'sla-breach' : ''}`}
+            >
+              <div className="order-status">
+                <span className="emoji">{getStatusIcon(item.status)}</span>
+                <span className="order-time">{formatTimestamp(item.timestamp)}</span>
+              </div>
+              <div className="order-details">
+                <span className="order-id">{item.order_id}</span>
+                <span className="order-type">{item.cuisine_type}</span>
+                <span className="order-zone">Zone: {item.zone}</span>
+              </div>
+              <div className="delivery-info">
+                <span className="delivery-time">
+                  {item.delivery_minutes} min
+                  {isSLABreach(item.delivery_minutes) && <span className="sla-tag">SLA BREACH</span>}
+                </span>
+                <span className="order-amount">${item.total_amount}</span>
+              </div>
             </div>
-            <div className="order-details">
-              <span className="order-id">{item.order_id}</span>
-              <span className="order-type">{item.cuisine_type}</span>
-              <span className="order-zone">Zone: {item.zone}</span>
-            </div>
-            <div className="delivery-info">
-              <span className="delivery-time">
-                {item.delivery_minutes} min
-                {isSLABreach(item.delivery_minutes) && <span className="sla-tag">SLA BREACH</span>}
-              </span>
-              <span className="order-amount">${item.total_amount}</span>
-            </div>
+          ))
+        ) : (
+          <div className="empty-feed">
+            <p>Start the simulation to see live orders</p>
           </div>
-        ))}
+        )}
       </div>
       
       <div className="feed-instructions">
