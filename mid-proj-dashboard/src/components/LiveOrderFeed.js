@@ -107,10 +107,6 @@ const LiveOrderFeed = ({ updateRate = 1000, slaBreachRef }) => {
         </div>
       </div>
       
-      <div className="simulation-note">
-        <p>This simulation generates new orders and automatically updates the SLA Breach chart in real-time.</p>
-      </div>
-      
       <div className="stats-container">
         <div className="stat-item">
           <h3>Total Orders</h3>
