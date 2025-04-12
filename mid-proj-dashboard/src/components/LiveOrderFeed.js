@@ -4,7 +4,7 @@ import './LiveOrderFeed.css';
 
 const MAX_FEED_ITEMS = 9; // Maximum number of items to display in the feed
 
-const LiveOrderFeed = ({ updateRate = 2000, slaBreachRef, slaTrendRef, avgDeliveryRef, weatherRef }) => {
+const LiveOrderFeed = ({ updateRate = 2000, slaBreachRef, slaTrendRef, avgDeliveryRef, weatherRef, timeOfDayRef }) => {
   const [isRunning, setIsRunning] = useState(false);
   const [speedMultiplier, setSpeedMultiplier] = useState(1);
   const [feedItems, setFeedItems] = useState([]);
@@ -90,6 +90,11 @@ const LiveOrderFeed = ({ updateRate = 2000, slaBreachRef, slaTrendRef, avgDelive
           if (weatherRef && weatherRef.current) {
             weatherRef.current.updateWithLiveData(dataBatch);
           }
+          
+          // Update the time of day component
+          if (timeOfDayRef && timeOfDayRef.current) {
+            timeOfDayRef.current.updateWithLiveData(dataBatch);
+          }
         }
       }
     };
@@ -100,7 +105,7 @@ const LiveOrderFeed = ({ updateRate = 2000, slaBreachRef, slaTrendRef, avgDelive
     return () => {
       clearInterval(intervalId);
     };
-  }, [isRunning, updateRate, speedMultiplier, stats.totalOrders, slaBreachRef, slaTrendRef, avgDeliveryRef, weatherRef]);
+  }, [isRunning, updateRate, speedMultiplier, stats.totalOrders, slaBreachRef, slaTrendRef, avgDeliveryRef, weatherRef, timeOfDayRef]);
 
   // Format the timestamp for display
   const formatTimestamp = (timestamp) => {

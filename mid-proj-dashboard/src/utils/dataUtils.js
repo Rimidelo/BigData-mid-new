@@ -548,4 +548,91 @@ export const aggregateSLABreachByWeather = (data) => {
     console.error('Error aggregating weather condition data:', err);
     return [];
   }
+};
+
+// Function to aggregate SLA breach data by time of day (Morning, Afternoon, Evening, Night)
+export const aggregateSLABreachByTimeOfDay = (data) => {
+  if (!data || !Array.isArray(data) || data.length === 0) {
+    return [];
+  }
+  
+  try {
+    // Define the time periods in order for consistent display
+    const timePeriods = ['Morning', 'Afternoon', 'Evening', 'Night'];
+    
+    // Group by time period
+    const timeMap = {};
+    
+    // Initialize time periods
+    timePeriods.forEach(period => {
+      timeMap[period] = {
+        totalOrders: 0,
+        totalTime: 0,
+        slaBreaches: 0,
+        avgTimes: [] // Store all avg_delivery_min values for boxplot/distribution
+      };
+    });
+    
+    data.forEach(item => {
+      if (!item.time_period) return;
+      
+      const timePeriod = item.time_period;
+      if (!timeMap[timePeriod]) return; // Skip invalid time periods
+      
+      const orders = typeof item.orders === 'string' 
+        ? parseInt(item.orders) 
+        : item.orders || 0;
+      
+      const avgDeliveryMin = typeof item.avg_delivery_min === 'string'
+        ? parseFloat(item.avg_delivery_min)
+        : item.avg_delivery_min || 0;
+      
+      // Consider delivery times over 45 minutes as SLA breaches
+      const slaThreshold = 45;
+      const isBreached = avgDeliveryMin > slaThreshold;
+      
+      timeMap[timePeriod].totalOrders += orders;
+      timeMap[timePeriod].totalTime += avgDeliveryMin * orders;
+      timeMap[timePeriod].avgTimes.push(avgDeliveryMin);
+      
+      if (isBreached) {
+        timeMap[timePeriod].slaBreaches += orders;
+      }
+    });
+    
+    // Calculate stats and format data for chart
+    return timePeriods.map(period => {
+      const periodData = timeMap[period];
+      const avgTime = periodData.totalOrders > 0 
+        ? periodData.totalTime / periodData.totalOrders 
+        : 0;
+      const breachPct = periodData.totalOrders > 0 
+        ? (periodData.slaBreaches / periodData.totalOrders) * 100 
+        : 0;
+      
+      // Calculate quartiles for boxplot
+      const sortedTimes = [...periodData.avgTimes].sort((a, b) => a - b);
+      const q1 = sortedTimes[Math.floor(sortedTimes.length * 0.25)] || 0;
+      const q2 = sortedTimes[Math.floor(sortedTimes.length * 0.5)] || 0;  // median
+      const q3 = sortedTimes[Math.floor(sortedTimes.length * 0.75)] || 0;
+      const min = sortedTimes[0] || 0;
+      const max = sortedTimes[sortedTimes.length - 1] || 0;
+        
+      return {
+        name: period,
+        breachPct: Math.round(breachPct * 10) / 10,
+        avgTime: Math.round(avgTime * 10) / 10,
+        totalOrders: periodData.totalOrders,
+        // Boxplot data
+        min,
+        q1,
+        median: q2,
+        q3,
+        max
+      };
+    });
+  } catch (err) {
+    console.error('Error aggregating time period data:', err);
+    return [];
+  }
 }; 
