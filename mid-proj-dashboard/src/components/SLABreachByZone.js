@@ -6,7 +6,10 @@ import './SLABreachByZone.css';
 // Fallback data in case everything else fails
 const FALLBACK_DATA = [
   { zone: 'Z1', averageSLABreachPct: 49.2, fill: '#8884d8' },
-  { zone: 'Z2', averageSLABreachPct: 48.5, fill: '#82ca9d' }
+  { zone: 'Z2', averageSLABreachPct: 48.5, fill: '#82ca9d' },
+  { zone: 'Z3', averageSLABreachPct: 46.8, fill: '#ffc658' },
+  { zone: 'Z4', averageSLABreachPct: 44.3, fill: '#ff8042' },
+  { zone: 'Z5', averageSLABreachPct: 47.9, fill: '#0088fe' }
 ];
 
 const SLABreachByZone = forwardRef((props, ref) => {
@@ -14,6 +17,7 @@ const SLABreachByZone = forwardRef((props, ref) => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [isUpdating, setIsUpdating] = useState(false);
+  const [initialDataLoaded, setInitialDataLoaded] = useState(false);
   
   // Expose the updateWithLiveData method to parent components
   useImperativeHandle(ref, () => ({
@@ -81,18 +85,23 @@ const SLABreachByZone = forwardRef((props, ref) => {
     }
   }));
   
+  // Load initial data
   useEffect(() => {
     const loadData = async () => {
       try {
         setLoading(true);
-        // Fetch initial data with hard-coded fallback
+        console.log('Loading initial SLA breach data...');
         const responseData = await fetchSLABreachData();
         
         // Debug logging
-        console.log('Raw data received:', responseData);
+        console.log('Data fetched:', responseData);
         
         if (!responseData || responseData.length === 0) {
-          throw new Error('No data received from API');
+          console.warn('No data received, using fallback data');
+          setData(FALLBACK_DATA);
+          setError('Using fallback data for visualization.');
+          setLoading(false);
+          return;
         }
         
         const chartData = aggregateSLABreachByZone(responseData);
@@ -101,8 +110,13 @@ const SLABreachByZone = forwardRef((props, ref) => {
         // Only set data if we have chart data
         if (chartData && chartData.length > 0) {
           setData(chartData);
+          setInitialDataLoaded(true);
+          if (props.onInitialDataLoaded) {
+            props.onInitialDataLoaded();
+          }
         } else {
           console.warn('Using fallback data as chart data was empty');
+          setError('Using fallback data for visualization.');
         }
         
         setLoading(false);
@@ -114,7 +128,29 @@ const SLABreachByZone = forwardRef((props, ref) => {
     };
     
     loadData();
-  }, []);
+  }, [props.onInitialDataLoaded]);
+
+  // Update with live data when available
+  useEffect(() => {
+    if (props.liveData && props.liveData.length > 0 && initialDataLoaded) {
+      console.log('Received live data for SLA chart:', props.liveData);
+      
+      // Visual feedback for updates
+      setIsUpdating(true);
+      
+      // Get current data and merge with new live data
+      const allData = [...props.liveData];
+      const aggregatedData = aggregateSLABreachByZone(allData);
+      
+      console.log('Updated aggregated data:', aggregatedData);
+      setData(aggregatedData);
+      
+      // Reset update animation after a short delay
+      setTimeout(() => {
+        setIsUpdating(false);
+      }, 500);
+    }
+  }, [props.liveData, initialDataLoaded]);
 
   if (loading) {
     return <div className="loading">Loading SLA breach data...</div>;
@@ -122,35 +158,71 @@ const SLABreachByZone = forwardRef((props, ref) => {
 
   return (
     <div className="sla-breach-container">
-      <h2>SLA Breach % by Zone</h2>
+      <h2>Delivery Performance by Zone</h2>
       {error && <div className="error-banner">{error}</div>}
       <div className="live-data-indicator">Updates in real-time with the Live Order Feed</div>
       <div className={`sla-breach-chart ${isUpdating ? 'updating' : ''}`}>
-        <ResponsiveContainer width="100%" height={300}>
+        <div className="data-source-legend">
+          <div className="legend-item">
+            <span className="legend-color historical"></span>
+            <span>Historical Data</span>
+          </div>
+          <div className="legend-item">
+            <span className="legend-color simulation"></span>
+            <span>Simulation Data</span>
+          </div>
+        </div>
+        <ResponsiveContainer width="100%" height={400}>
           <BarChart
             data={data}
             margin={{
-              top: 5,
+              top: 20,
               right: 30,
               left: 20,
-              bottom: 5,
+              bottom: 30,
             }}
           >
             <CartesianGrid strokeDasharray="3 3" />
             <XAxis dataKey="zone" />
             <YAxis 
+              yAxisId="left"
               label={{ value: 'SLA Breach %', angle: -90, position: 'insideLeft' }}
               domain={[0, 60]}
             />
-            <Tooltip formatter={(value) => [`${value.toFixed(2)}%`, 'SLA Breach Rate']} />
+            <YAxis 
+              yAxisId="right" 
+              orientation="right" 
+              label={{ value: 'Minutes', angle: 90, position: 'insideRight' }}
+              domain={[0, 60]} 
+            />
+            <Tooltip 
+              formatter={(value, name, props) => {
+                if (name === 'SLA Breach %') {
+                  return [`${value.toFixed(2)}%`, 'SLA Breach Rate'];
+                } else if (name === 'Avg Delivery Time') {
+                  return [`${value.toFixed(1)} min`, 'Avg Delivery Time'];
+                } else if (name === 'Orders') {
+                  return [value, 'Total Orders'];
+                }
+                return [value, name];
+              }}
+              labelFormatter={(value) => `Zone ${value}`}
+            />
             <Legend />
             <Bar 
               dataKey="averageSLABreachPct" 
               name="SLA Breach %" 
+              yAxisId="left"
               fill="#8884d8"
               animationDuration={500}
-              // Apply pulsing animation to bars that are being updated
               style={{ filter: 'drop-shadow(0px 0px 3px rgba(0,0,0,0.5))' }}
+            />
+            <Bar 
+              dataKey="averageDeliveryTime" 
+              name="Avg Delivery Time" 
+              yAxisId="right"
+              fill="#82ca9d"
+              animationDuration={500}
             />
           </BarChart>
         </ResponsiveContainer>
@@ -158,9 +230,16 @@ const SLABreachByZone = forwardRef((props, ref) => {
       <div className="sla-breach-insights">
         <h3>Insights:</h3>
         <ul>
-          <li>Zone Z1 has a slightly higher breach rate than Zone Z2</li>
-          <li>Both zones have breach rates close to 50%</li>
-          <li>This suggests systematic issues affecting all zones</li>
+          <li>Chart shows SLA breach percentage and average delivery time by zone</li>
+          <li>Start the simulation to see the chart update with newer data</li>
+          <li>The data represents {data.reduce((sum, zone) => sum + (zone.totalOrders || 0), 0)} total delivery orders</li>
+          {data.length > 0 && (
+            <li>
+              Zone {data.sort((a, b) => b.averageSLABreachPct - a.averageSLABreachPct)[0]?.zone} 
+              has the highest SLA breach rate at {' '}
+              {data.sort((a, b) => b.averageSLABreachPct - a.averageSLABreachPct)[0]?.averageSLABreachPct.toFixed(2)}%
+            </li>
+          )}
         </ul>
       </div>
     </div>

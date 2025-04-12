@@ -1,11 +1,13 @@
 import React, { useRef } from 'react';
 import SLABreachByZone from './SLABreachByZone';
+import SLABreachTrend from './SLABreachTrend';
 import LiveOrderFeed from './LiveOrderFeed';
 import './Dashboard.css';
 
 const Dashboard = () => {
   // References to component instances for accessing their methods
   const slaBreachRef = useRef();
+  const slaTrendRef = useRef();
 
   return (
     <div className="dashboard">
@@ -15,9 +17,16 @@ const Dashboard = () => {
       </div>
       
       <div className="dashboard-content">
-        <SLABreachByZone ref={slaBreachRef} />
+        <div className="dashboard-grid">
+          <SLABreachByZone ref={slaBreachRef} />
+          <SLABreachTrend ref={slaTrendRef} />
+        </div>
         
-        <LiveOrderFeed updateRate={500} slaBreachRef={slaBreachRef} />
+        <LiveOrderFeed 
+          updateRate={500} 
+          slaBreachRef={slaBreachRef}
+          slaTrendRef={slaTrendRef}
+        />
         
         {/* Additional components will be added here */}
         <div className="placeholder-metrics">
@@ -25,8 +34,8 @@ const Dashboard = () => {
           <ul>
             <li>Which delivery zones experience the most late deliveries (SLA breaches)?</li>
             <li>What factors contribute to these delays?</li>
+            <li>Are there specific days or time periods with higher SLA breach rates?</li>
             <li>How do weather conditions affect delivery times?</li>
-            <li>Is there a correlation between delivery distance and SLA breaches?</li>
           </ul>
         </div>
       </div>

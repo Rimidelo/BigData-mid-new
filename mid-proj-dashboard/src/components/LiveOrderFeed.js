@@ -1,169 +1,210 @@
 import React, { useState, useEffect } from 'react';
-import { generateLiveOrder } from '../utils/dataUtils';
+import { fetchLiveUpdate, generateLiveOrder } from '../utils/dataUtils';
 import './LiveOrderFeed.css';
 
-const LiveOrderFeed = ({ updateRate = 1000, slaBreachRef }) => {
-  const [orders, setOrders] = useState([]);
+const MAX_FEED_ITEMS = 6; // Maximum number of items to display in the feed
+
+const LiveOrderFeed = ({ updateRate = 2000, slaBreachRef, slaTrendRef }) => {
   const [isRunning, setIsRunning] = useState(false);
+  const [speedMultiplier, setSpeedMultiplier] = useState(1);
+  const [feedItems, setFeedItems] = useState([]);
   const [stats, setStats] = useState({
     totalOrders: 0,
-    averageDeliveryTime: 0,
+    avgDeliveryTime: 0,
+    ordersByZone: {},
     slaBreaches: 0
   });
 
+  // Start or stop the simulation
+  const toggleSimulation = () => {
+    setIsRunning(!isRunning);
+  };
+
+  // Adjust simulation speed
+  const changeSpeed = (multiplier) => {
+    setSpeedMultiplier(multiplier);
+  };
+
+  // Initialize feed with some sample data
   useEffect(() => {
+    // Add a few initial orders for illustration
+    const initialOrders = Array(3)
+      .fill(null)
+      .map(() => generateLiveOrder());
+    
+    setFeedItems(initialOrders);
+  }, []);
+
+  // Run the simulation loop
+  useEffect(() => {
+    if (!isRunning) return;
+
     let intervalId;
     
-    if (isRunning) {
-      // Generate new orders at the specified rate
-      intervalId = setInterval(() => {
-        const newOrder = generateLiveOrder();
+    const runSimulation = async () => {
+      // Generate a new order
+      const newOrder = generateLiveOrder();
+      
+      // Update feed items, keeping only the most recent MAX_FEED_ITEMS
+      setFeedItems(prev => [newOrder, ...prev].slice(0, MAX_FEED_ITEMS));
+      
+      // Update stats
+      setStats(prev => {
+        const newTotal = prev.totalOrders + 1;
+        const newAvgTime = ((prev.avgDeliveryTime * prev.totalOrders) + newOrder.delivery_minutes) / newTotal;
         
-        setOrders(prevOrders => {
-          // Limit to last 10 orders for display
-          const updatedOrders = [newOrder, ...prevOrders].slice(0, 10);
-          return updatedOrders;
-        });
+        // Track orders by zone
+        const ordersByZone = {...prev.ordersByZone};
+        ordersByZone[newOrder.zone] = (ordersByZone[newOrder.zone] || 0) + 1;
         
-        // Update stats
-        setStats(prevStats => {
-          const newTotalOrders = prevStats.totalOrders + 1;
-          const newTotalTime = prevStats.averageDeliveryTime * prevStats.totalOrders + newOrder.delivery_minutes;
-          const newAvgTime = newTotalTime / newTotalOrders;
-          const newSlaBreaches = prevStats.slaBreaches + (newOrder.delivery_minutes > 45 ? 1 : 0);
-          
-          return {
-            totalOrders: newTotalOrders,
-            averageDeliveryTime: newAvgTime,
-            slaBreaches: newSlaBreaches
-          };
-        });
+        // Count SLA breaches (delivery times > 45 minutes)
+        const newSLABreaches = prev.slaBreaches + (newOrder.delivery_minutes > 45 ? 1 : 0);
         
-        // Update SLABreachByZone component with the new order data
-        if (slaBreachRef && slaBreachRef.current) {
-          // Convert the order into a format that SLABreachByZone can use
-          const isSLABreach = newOrder.delivery_minutes > 45;
+        return {
+          totalOrders: newTotal,
+          avgDeliveryTime: newAvgTime,
+          ordersByZone,
+          slaBreaches: newSLABreaches
+        };
+      });
+      
+      // Periodically pull actual batches of data to update charts
+      if (stats.totalOrders % 5 === 0) {
+        // Get the next batch of simulation data
+        const dataBatch = await fetchLiveUpdate();
+        
+        // Update charts with the new data batch
+        if (dataBatch && dataBatch.length > 0) {
+          console.log('Sending simulation batch to SLA chart:', dataBatch);
+          if (slaBreachRef && slaBreachRef.current) {
+            slaBreachRef.current.updateWithLiveData(dataBatch);
+          }
           
-          // Create a more realistic breach percentage instead of just 0 or 1
-          // This simulates aggregated data over multiple orders
-          const zoneTrend = newOrder.zone === 'Z1' ? 0.48 : 0.47; // Base trends from historical data
-          const randomVariance = (Math.random() * 0.1) - 0.05; // Add some randomness
-          const breachPct = isSLABreach 
-            ? zoneTrend + Math.abs(randomVariance) // If breach, trend upward
-            : zoneTrend - Math.abs(randomVariance); // If not breach, trend downward
-          
-          const slaBreachData = [{
-            order_date: new Date().toISOString().split('T')[0],
-            zone: newOrder.zone,
-            sla_breach_pct: breachPct // Use realistic breach percentage
-          }];
-          
-          console.log('Sending live update to SLA chart:', slaBreachData);
-          slaBreachRef.current.updateWithLiveData(slaBreachData);
+          // Update the trend component if available
+          if (slaTrendRef && slaTrendRef.current) {
+            slaTrendRef.current.updateWithLiveData(dataBatch);
+          }
         }
-        
-      }, updateRate);
-    }
+      }
+    };
+    
+    // Set interval based on speed multiplier
+    intervalId = setInterval(runSimulation, updateRate / speedMultiplier);
     
     return () => {
       clearInterval(intervalId);
     };
-  }, [isRunning, updateRate, slaBreachRef]);
+  }, [isRunning, updateRate, speedMultiplier, stats.totalOrders, slaBreachRef, slaTrendRef]);
 
-  const toggleSimulation = () => {
-    setIsRunning(prev => !prev);
+  // Format the timestamp for display
+  const formatTimestamp = (timestamp) => {
+    const date = new Date(timestamp);
+    return date.toLocaleTimeString();
   };
 
-  const resetSimulation = () => {
-    setOrders([]);
-    setStats({
-      totalOrders: 0,
-      averageDeliveryTime: 0,
-      slaBreaches: 0
-    });
-    setIsRunning(false);
+  // Get appropriate status icon based on order status
+  const getStatusIcon = (status) => {
+    switch(status) {
+      case 'preparing':
+        return '🍳';
+      case 'in_transit':
+        return '🚚';
+      case 'delivered':
+        return '✅';
+      default:
+        return '🔄';
+    }
   };
 
-  // Format timestamp for display
-  const formatTime = (isoString) => {
-    const date = new Date(isoString);
-    return `${date.getHours().toString().padStart(2, '0')}:${date.getMinutes().toString().padStart(2, '0')}:${date.getSeconds().toString().padStart(2, '0')}`;
+  // Determine if an order is breaching SLA (delivery time > 45 minutes)
+  const isSLABreach = (deliveryMinutes) => {
+    return deliveryMinutes > 45;
   };
 
   return (
-    <div className="live-order-feed">
-      <div className="feed-header">
-        <h2>Live Order Feed</h2>
-        <div className="feed-controls">
+    <div className="live-feed-container">
+      <h2>Live Order Feed Simulation</h2>
+      <div className="controls">
+        <button 
+          className={`toggle-btn ${isRunning ? 'running' : ''}`} 
+          onClick={toggleSimulation}
+        >
+          {isRunning ? 'Pause Simulation' : 'Start Simulation'}
+        </button>
+        
+        <div className="speed-controls">
+          <span>Speed:</span>
           <button 
-            className={`control-button ${isRunning ? 'stop' : 'start'}`} 
-            onClick={toggleSimulation}
+            className={speedMultiplier === 0.5 ? 'active' : ''} 
+            onClick={() => changeSpeed(0.5)}
           >
-            {isRunning ? 'Pause Simulation' : 'Start Simulation'}
+            0.5x
           </button>
-          <button className="control-button reset" onClick={resetSimulation}>
-            Reset
+          <button 
+            className={speedMultiplier === 1 ? 'active' : ''} 
+            onClick={() => changeSpeed(1)}
+          >
+            1x
+          </button>
+          <button 
+            className={speedMultiplier === 2 ? 'active' : ''} 
+            onClick={() => changeSpeed(2)}
+          >
+            2x
           </button>
         </div>
       </div>
       
-      <div className="stats-container">
+      <div className="stats">
         <div className="stat-item">
-          <h3>Total Orders</h3>
-          <p>{stats.totalOrders}</p>
+          <span className="stat-value">{stats.totalOrders}</span>
+          <span className="stat-label">Total Orders</span>
         </div>
         <div className="stat-item">
-          <h3>Avg Delivery Time</h3>
-          <p>{stats.averageDeliveryTime.toFixed(1)} min</p>
+          <span className="stat-value">{stats.avgDeliveryTime.toFixed(1)}</span>
+          <span className="stat-label">Avg. Delivery (min)</span>
         </div>
         <div className="stat-item">
-          <h3>SLA Breaches</h3>
-          <p>{stats.slaBreaches} ({stats.totalOrders > 0 
-              ? ((stats.slaBreaches / stats.totalOrders) * 100).toFixed(1) 
-              : 0}%)</p>
+          <span className="stat-value">{stats.slaBreaches}</span>
+          <span className="stat-label">SLA Breaches</span>
+        </div>
+        <div className="stat-item">
+          <span className="stat-value">
+            {stats.totalOrders > 0 ? ((stats.slaBreaches / stats.totalOrders) * 100).toFixed(1) : '0.0'}%
+          </span>
+          <span className="stat-label">Breach Rate</span>
         </div>
       </div>
       
-      <div className="orders-container">
-        {orders.length === 0 ? (
-          <div className="no-orders">Start the simulation to see live orders</div>
-        ) : (
-          <table className="orders-table">
-            <thead>
-              <tr>
-                <th>Time</th>
-                <th>Order ID</th>
-                <th>Zone</th>
-                <th>Cuisine</th>
-                <th>Amount</th>
-                <th>Status</th>
-                <th>Delivery</th>
-              </tr>
-            </thead>
-            <tbody>
-              {orders.map((order, index) => (
-                <tr key={index} className={order.delivery_minutes > 45 ? 'sla-breached' : ''}>
-                  <td>{formatTime(order.timestamp)}</td>
-                  <td>{order.order_id}</td>
-                  <td>{order.zone}</td>
-                  <td>{order.cuisine_type}</td>
-                  <td>${order.total_amount}</td>
-                  <td>
-                    <span className={`status-badge ${order.status}`}>
-                      {order.status.replace('_', ' ')}
-                    </span>
-                  </td>
-                  <td>
-                    {order.delivery_minutes} min
-                    {order.delivery_minutes > 45 && (
-                      <span className="breach-badge">SLA Breach</span>
-                    )}
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        )}
+      <div className="feed-list">
+        {feedItems.map((item, index) => (
+          <div 
+            key={index} 
+            className={`feed-item ${isSLABreach(item.delivery_minutes) ? 'sla-breach' : ''}`}
+          >
+            <div className="order-status">
+              {getStatusIcon(item.status)}
+              <span className="order-time">{formatTimestamp(item.timestamp)}</span>
+            </div>
+            <div className="order-details">
+              <span className="order-id">{item.order_id}</span>
+              <span className="order-type">{item.cuisine_type}</span>
+              <span className="order-zone">Zone: {item.zone}</span>
+            </div>
+            <div className="delivery-info">
+              <span className="delivery-time">
+                {item.delivery_minutes} min
+                {isSLABreach(item.delivery_minutes) && <span className="sla-tag">SLA BREACH</span>}
+              </span>
+              <span className="order-amount">${item.total_amount}</span>
+            </div>
+          </div>
+        ))}
+      </div>
+      
+      <div className="feed-instructions">
+        <p>This simulation generates random orders and periodically updates the charts with new KPI data.</p>
+        <p>Start the simulation to see how the dashboard responds to new data.</p>
       </div>
     </div>
   );
