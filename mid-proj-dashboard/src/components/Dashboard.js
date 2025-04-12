@@ -27,17 +27,6 @@ const Dashboard = () => {
           slaBreachRef={slaBreachRef}
           slaTrendRef={slaTrendRef}
         />
-        
-        {/* Additional components will be added here */}
-        <div className="placeholder-metrics">
-          <h3>Key Questions to Explore:</h3>
-          <ul>
-            <li>Which delivery zones experience the most late deliveries (SLA breaches)?</li>
-            <li>What factors contribute to these delays?</li>
-            <li>Are there specific days or time periods with higher SLA breach rates?</li>
-            <li>How do weather conditions affect delivery times?</li>
-          </ul>
-        </div>
       </div>
     </div>
   );

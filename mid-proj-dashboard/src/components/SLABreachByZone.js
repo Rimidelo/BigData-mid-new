@@ -227,21 +227,6 @@ const SLABreachByZone = forwardRef((props, ref) => {
           </BarChart>
         </ResponsiveContainer>
       </div>
-      <div className="sla-breach-insights">
-        <h3>Insights:</h3>
-        <ul>
-          <li>Chart shows SLA breach percentage and average delivery time by zone</li>
-          <li>Start the simulation to see the chart update with newer data</li>
-          <li>The data represents {data.reduce((sum, zone) => sum + (zone.totalOrders || 0), 0)} total delivery orders</li>
-          {data.length > 0 && (
-            <li>
-              Zone {data.sort((a, b) => b.averageSLABreachPct - a.averageSLABreachPct)[0]?.zone} 
-              has the highest SLA breach rate at {' '}
-              {data.sort((a, b) => b.averageSLABreachPct - a.averageSLABreachPct)[0]?.averageSLABreachPct.toFixed(2)}%
-            </li>
-          )}
-        </ul>
-      </div>
     </div>
   );
 });

@@ -6,6 +6,8 @@
   margin-bottom: 20px;
   display: flex;
   flex-direction: column;
+  width: 100%;
+  box-sizing: border-box;
 }
 
 .sla-trend-container h2 {
@@ -19,8 +21,9 @@
   background-color: #f9f9f9;
   border-radius: 8px;
   padding: 15px;
-  margin-bottom: 15px;
-  height: 400px;
+  margin: 10px 0;
+  height: 450px;
+  min-height: 450px;
   transition: all 0.3s ease;
 }
 
@@ -31,7 +34,7 @@
 
 .live-data-indicator {
   font-size: 0.8rem;
-  margin-bottom: 10px;
+  margin-bottom: 5px;
   color: #777;
   font-style: italic;
 }
@@ -97,4 +100,16 @@
 .recharts-reference-line text {
   font-weight: 600;
   fill: #d32f2f;
+}
+
+/* Brush styling */
+.recharts-brush rect.recharts-brush-slide {
+  fill: #f0f0f0;
+  stroke: #ddd;
+}
+
+.recharts-brush rect.recharts-brush-traveller {
+  fill: #fff;
+  stroke: #8884d8;
+  stroke-width: 1.5px;
 } 

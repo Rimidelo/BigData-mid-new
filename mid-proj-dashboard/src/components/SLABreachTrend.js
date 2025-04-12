@@ -234,30 +234,6 @@ const SLABreachTrend = forwardRef((props, ref) => {
           </LineChart>
         </ResponsiveContainer>
       </div>
-      <div className="sla-trend-insights">
-        <h3>Insights:</h3>
-        <ul>
-          <li>Chart shows SLA breach percentage trend over time</li>
-          <li>Includes daily order volume to correlate with SLA breaches</li>
-          <li>Red dotted line indicates the target SLA breach rate</li>
-          <li>Use the brush at the bottom to zoom into specific time periods</li>
-          {data.length > 0 && (
-            <>
-              <li>
-                Highest SLA breach rate: {Math.max(...data.map(d => d.averageSLABreachPct)).toFixed(2)}% on {
-                  new Date(data.sort((a, b) => b.averageSLABreachPct - a.averageSLABreachPct)[0].date)
-                    .toLocaleDateString()
-                }
-              </li>
-              <li>
-                {data[data.length - 1].averageSLABreachPct > data[0].averageSLABreachPct 
-                  ? 'SLA breach rate is trending upward' 
-                  : 'SLA breach rate is trending downward'}
-              </li>
-            </>
-          )}
-        </ul>
-      </div>
     </div>
   );
 });

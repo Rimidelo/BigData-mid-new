@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { fetchLiveUpdate, generateLiveOrder } from '../utils/dataUtils';
 import './LiveOrderFeed.css';
 
-const MAX_FEED_ITEMS = 6; // Maximum number of items to display in the feed
+const MAX_FEED_ITEMS = 9; // Maximum number of items to display in the feed
 
 const LiveOrderFeed = ({ updateRate = 2000, slaBreachRef, slaTrendRef }) => {
   const [isRunning, setIsRunning] = useState(false);
@@ -183,7 +183,7 @@ const LiveOrderFeed = ({ updateRate = 2000, slaBreachRef, slaTrendRef }) => {
             className={`feed-item ${isSLABreach(item.delivery_minutes) ? 'sla-breach' : ''}`}
           >
             <div className="order-status">
-              {getStatusIcon(item.status)}
+              <span className="emoji">{getStatusIcon(item.status)}</span>
               <span className="order-time">{formatTimestamp(item.timestamp)}</span>
             </div>
             <div className="order-details">
