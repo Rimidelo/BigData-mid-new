@@ -120,8 +120,12 @@ export const fetchSLABreachData = async () => {
 // Function to fetch cuisine performance data
 export const fetchCuisineData = async () => {
   try {
-    const response = await axios.get('/data/kpi_cuisine_performance.csv');
-    return parseCSV(response.data);
+    const response = await fetch('/data/kpi/kpi_cuisine_performance.csv');
+    if (!response.ok) {
+      throw new Error('Failed to fetch cuisine data');
+    }
+    const csvText = await response.text();
+    return parseCSV(csvText);
   } catch (error) {
     console.error('Error fetching cuisine data:', error);
     return []; 
@@ -131,8 +135,12 @@ export const fetchCuisineData = async () => {
 // Function to fetch menu item sales data
 export const fetchMenuItemData = async () => {
   try {
-    const response = await axios.get('/data/kpi_menu_item_sales.csv');
-    return parseCSV(response.data);
+    const response = await fetch('/data/kpi/kpi_menu_item_sales.csv');
+    if (!response.ok) {
+      throw new Error('Failed to fetch menu item data');
+    }
+    const csvText = await response.text();
+    return parseCSV(csvText);
   } catch (error) {
     console.error('Error fetching menu item data:', error);
     return [];
@@ -475,6 +483,69 @@ export const aggregateMenuItemData = (data) => {
       .sort((a, b) => b.totalItems - a.totalItems);
   } catch (err) {
     console.error('Error aggregating menu item data:', err);
+    return [];
+  }
+};
+
+// Function to aggregate SLA breach data by weather condition
+export const aggregateSLABreachByWeather = (data) => {
+  if (!data || !Array.isArray(data) || data.length === 0) {
+    return [];
+  }
+  
+  try {
+    // Group by weather condition
+    const weatherMap = {};
+    
+    data.forEach(item => {
+      if (!item.weather_condition) return;
+      
+      if (!weatherMap[item.weather_condition]) {
+        weatherMap[item.weather_condition] = {
+          totalOrders: 0,
+          totalTime: 0,
+          slaBreaches: 0
+        };
+      }
+      
+      const orders = typeof item.orders === 'string' 
+        ? parseInt(item.orders) 
+        : item.orders || 0;
+      
+      const avgDeliveryMin = typeof item.avg_delivery_min === 'string'
+        ? parseFloat(item.avg_delivery_min)
+        : item.avg_delivery_min || 0;
+      
+      // Consider delivery times over 45 minutes as SLA breaches
+      const slaThreshold = 45;
+      const isBreached = avgDeliveryMin > slaThreshold;
+      
+      weatherMap[item.weather_condition].totalOrders += orders;
+      weatherMap[item.weather_condition].totalTime += avgDeliveryMin * orders;
+      if (isBreached) {
+        weatherMap[item.weather_condition].slaBreaches += orders;
+      }
+    });
+    
+    // Calculate percentages and format data for chart
+    return Object.keys(weatherMap).map(weather => {
+      const weatherData = weatherMap[weather];
+      const avgTime = weatherData.totalOrders > 0 
+        ? weatherData.totalTime / weatherData.totalOrders 
+        : 0;
+      const breachPct = weatherData.totalOrders > 0 
+        ? (weatherData.slaBreaches / weatherData.totalOrders) * 100 
+        : 0;
+        
+      return {
+        name: weather,
+        breachPct: Math.round(breachPct * 10) / 10,
+        avgTime: Math.round(avgTime * 10) / 10,
+        totalOrders: weatherData.totalOrders
+      };
+    }).sort((a, b) => b.breachPct - a.breachPct);
+  } catch (err) {
+    console.error('Error aggregating weather condition data:', err);
     return [];
   }
 }; 

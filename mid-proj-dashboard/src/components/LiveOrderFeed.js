@@ -4,7 +4,7 @@ import './LiveOrderFeed.css';
 
 const MAX_FEED_ITEMS = 9; // Maximum number of items to display in the feed
 
-const LiveOrderFeed = ({ updateRate = 2000, slaBreachRef, slaTrendRef }) => {
+const LiveOrderFeed = ({ updateRate = 2000, slaBreachRef, slaTrendRef, avgDeliveryRef, weatherRef }) => {
   const [isRunning, setIsRunning] = useState(false);
   const [speedMultiplier, setSpeedMultiplier] = useState(1);
   const [feedItems, setFeedItems] = useState([]);
@@ -69,7 +69,9 @@ const LiveOrderFeed = ({ updateRate = 2000, slaBreachRef, slaTrendRef }) => {
         
         // Update charts with the new data batch
         if (dataBatch && dataBatch.length > 0) {
-          console.log('Sending simulation batch to SLA chart:', dataBatch);
+          console.log('Sending simulation batch to charts:', dataBatch);
+          
+          // Update SLA breach by zone chart
           if (slaBreachRef && slaBreachRef.current) {
             slaBreachRef.current.updateWithLiveData(dataBatch);
           }
@@ -77,6 +79,16 @@ const LiveOrderFeed = ({ updateRate = 2000, slaBreachRef, slaTrendRef }) => {
           // Update the trend component if available
           if (slaTrendRef && slaTrendRef.current) {
             slaTrendRef.current.updateWithLiveData(dataBatch);
+          }
+          
+          // Update the average delivery time component
+          if (avgDeliveryRef && avgDeliveryRef.current) {
+            avgDeliveryRef.current.updateWithLiveData(dataBatch);
+          }
+          
+          // Update the weather condition component
+          if (weatherRef && weatherRef.current) {
+            weatherRef.current.updateWithLiveData(dataBatch);
           }
         }
       }
@@ -88,7 +100,7 @@ const LiveOrderFeed = ({ updateRate = 2000, slaBreachRef, slaTrendRef }) => {
     return () => {
       clearInterval(intervalId);
     };
-  }, [isRunning, updateRate, speedMultiplier, stats.totalOrders, slaBreachRef, slaTrendRef]);
+  }, [isRunning, updateRate, speedMultiplier, stats.totalOrders, slaBreachRef, slaTrendRef, avgDeliveryRef, weatherRef]);
 
   // Format the timestamp for display
   const formatTimestamp = (timestamp) => {
