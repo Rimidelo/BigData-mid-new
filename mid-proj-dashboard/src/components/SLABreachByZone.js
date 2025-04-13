@@ -291,6 +291,35 @@ const SLABreachByZone = forwardRef((props, ref) => {
           </BarChart>
         </ResponsiveContainer>
       </div>
+      
+      <div className="sla-breach-insights">
+        <h3>Delivery Performance Insights</h3>
+        <ul className="insights-list">
+          {data.length > 0 && (
+            <>
+              <li>
+                <strong>{data.reduce((prev, current) => current.averageSLABreachPct > prev.averageSLABreachPct ? current : prev, data[0]).zone}</strong> has the highest SLA breach rate at 
+                <strong> {data.reduce((prev, current) => current.averageSLABreachPct > prev.averageSLABreachPct ? current : prev, data[0]).averageSLABreachPct.toFixed(1)}%</strong>
+              </li>
+              <li>
+                <strong>{data.reduce((prev, current) => current.averageDeliveryTime > prev.averageDeliveryTime ? current : prev, data[0]).zone}</strong> has the longest average delivery time at 
+                <strong> {data.reduce((prev, current) => current.averageDeliveryTime > prev.averageDeliveryTime ? current : prev, data[0]).averageDeliveryTime.toFixed(1)} minutes</strong>
+              </li>
+              <li>
+                <strong>{data.reduce((prev, current) => current.orderCount > prev.orderCount ? current : prev, data[0]).zone}</strong> has the highest order volume with 
+                <strong> {data.reduce((prev, current) => current.orderCount > prev.orderCount ? current : prev, data[0]).orderCount?.toLocaleString() || 'N/A'}</strong> orders
+              </li>
+              <li>
+                Overall average SLA breach rate across all zones: 
+                <strong> {(data.reduce((sum, zone) => sum + zone.averageSLABreachPct, 0) / data.length).toFixed(1)}%</strong>
+              </li>
+              <li>
+                Total of <strong>{data.reduce((sum, zone) => sum + (zone.orderCount || 0), 0).toLocaleString()}</strong> delivery orders analyzed across all zones
+              </li>
+            </>
+          )}
+        </ul>
+      </div>
     </div>
   );
 });

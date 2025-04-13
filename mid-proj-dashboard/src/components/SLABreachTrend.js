@@ -264,6 +264,117 @@ const SLABreachTrend = forwardRef((props, ref) => {
           </LineChart>
         </ResponsiveContainer>
       </div>
+      
+      <div className="sla-trend-insights">
+        <h3>SLA Breach Trend Insights</h3>
+        <ul className="insights-list">
+          {data.length > 0 && (
+            <>
+              <li>
+                <strong>{new Date(data.reduce((prev, current) => 
+                  current.averageSLABreachPct > prev.averageSLABreachPct ? current : prev, data[0]).date).toLocaleDateString()}</strong> had the highest SLA breach rate at 
+                <strong> {data.reduce((prev, current) => 
+                  current.averageSLABreachPct > prev.averageSLABreachPct ? current : prev, data[0]).averageSLABreachPct.toFixed(1)}%</strong>
+              </li>
+              <li>
+                <strong>{new Date(data.reduce((prev, current) => 
+                  current.orders > prev.orders ? current : prev, data[0]).date).toLocaleDateString()}</strong> had the highest order volume with 
+                <strong> {data.reduce((prev, current) => 
+                  current.orders > prev.orders ? current : prev, data[0]).orders.toLocaleString()}</strong> orders
+              </li>
+              <li>
+                <strong>{data.filter(day => day.averageSLABreachPct > calculateSLATarget()).length}</strong> days exceeded the SLA breach target of <strong>{calculateSLATarget().toFixed(1)}%</strong>
+              </li>
+              <li>
+                <strong>Trend analysis:</strong> {
+                  (() => {
+                    // Calculate if the trend is improving or worsening
+                    if (data.length < 3) return "Insufficient data for trend analysis";
+                    
+                    // Get first and last 3 days (or less if not enough data)
+                    const firstDays = data.slice(0, Math.min(3, Math.floor(data.length/2)));
+                    const lastDays = data.slice(-Math.min(3, Math.ceil(data.length/2)));
+                    
+                    // Calculate averages
+                    const firstAvg = firstDays.reduce((sum, day) => sum + day.averageSLABreachPct, 0) / firstDays.length;
+                    const lastAvg = lastDays.reduce((sum, day) => sum + day.averageSLABreachPct, 0) / lastDays.length;
+                    
+                    // Calculate percentage change
+                    const percentChange = ((lastAvg - firstAvg) / firstAvg) * 100;
+                    
+                    // Check if there's a linear trend
+                    const xValues = Array.from({length: data.length}, (_, i) => i); // 0, 1, 2, ...
+                    const yValues = data.map(d => d.averageSLABreachPct);
+                    
+                    // Calculate linear regression
+                    const n = data.length;
+                    const sumX = xValues.reduce((a, b) => a + b, 0);
+                    const sumY = yValues.reduce((a, b) => a + b, 0);
+                    const sumXY = xValues.reduce((sum, x, i) => sum + x * yValues[i], 0);
+                    const sumXX = xValues.reduce((sum, x) => sum + x * x, 0);
+                    
+                    const slope = (n * sumXY - sumX * sumY) / (n * sumXX - sumX * sumX);
+                    const averageSLA = sumY / n;
+                    
+                    // Determine strength of trend
+                    const normalizedSlope = (slope * n) / averageSLA * 100; // Slope as percentage of average per period
+                    
+                    if (Math.abs(normalizedSlope) < 3) {
+                      return `SLA breach rate is stable around ${averageSLA.toFixed(1)}%`;
+                    } else if (percentChange < -5) {
+                      return `SLA breach rate has improved by ${Math.abs(percentChange).toFixed(1)}% from ${firstAvg.toFixed(1)}% to ${lastAvg.toFixed(1)}%`;
+                    } else if (percentChange > 5) {
+                      return `SLA breach rate has worsened by ${percentChange.toFixed(1)}% from ${firstAvg.toFixed(1)}% to ${lastAvg.toFixed(1)}%`;
+                    } else {
+                      return `SLA breach rate has remained relatively stable from ${firstAvg.toFixed(1)}% to ${lastAvg.toFixed(1)}%`;
+                    }
+                  })()
+                }
+              </li>
+              <li>
+                Total of <strong>{data.reduce((sum, day) => sum + day.orders, 0).toLocaleString()}</strong> orders processed over <strong>{data.length}</strong> days
+              </li>
+              <li>
+                Daily average of <strong>{Math.round(data.reduce((sum, day) => sum + day.orders, 0) / data.length).toLocaleString()}</strong> orders and <strong>{(data.reduce((sum, day) => sum + day.averageSLABreachPct, 0) / data.length).toFixed(1)}%</strong> SLA breach rate
+              </li>
+              <li>
+                <strong>Correlation analysis:</strong> {
+                  (() => {
+                    if (data.length < 5) return "Insufficient data for correlation analysis";
+                    
+                    // Calculate correlation between order volume and SLA breach rate
+                    const n = data.length;
+                    const sumX = data.reduce((sum, day) => sum + day.orders, 0);
+                    const sumY = data.reduce((sum, day) => sum + day.averageSLABreachPct, 0);
+                    const sumXY = data.reduce((sum, day) => sum + (day.orders * day.averageSLABreachPct), 0);
+                    const sumXX = data.reduce((sum, day) => sum + (day.orders * day.orders), 0);
+                    const sumYY = data.reduce((sum, day) => sum + (day.averageSLABreachPct * day.averageSLABreachPct), 0);
+                    
+                    const numerator = (n * sumXY) - (sumX * sumY);
+                    const denominator = Math.sqrt(((n * sumXX) - (sumX * sumX)) * ((n * sumYY) - (sumY * sumY)));
+                    
+                    if (denominator === 0) return "No clear correlation between order volume and SLA breach rate";
+                    
+                    const correlation = numerator / denominator;
+                    
+                    if (correlation > 0.5) {
+                      return "Strong positive correlation: Higher order volumes tend to increase SLA breach rates";
+                    } else if (correlation > 0.3) {
+                      return "Moderate positive correlation: Higher order volumes may increase SLA breach rates";
+                    } else if (correlation > -0.3) {
+                      return "No significant correlation between order volumes and SLA breach rates";
+                    } else if (correlation > -0.5) {
+                      return "Moderate negative correlation: Higher order volumes may reduce SLA breach rates";
+                    } else {
+                      return "Strong negative correlation: Higher order volumes tend to reduce SLA breach rates";
+                    }
+                  })()
+                }
+              </li>
+            </>
+          )}
+        </ul>
+      </div>
     </div>
   );
 });
