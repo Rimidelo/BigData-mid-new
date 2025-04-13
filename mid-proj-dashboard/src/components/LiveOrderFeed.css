@@ -1,259 +1,136 @@
 .live-feed-container {
   background-color: white;
   border-radius: 10px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-  padding: 20px;
+  padding: 15px;
   margin-bottom: 20px;
   width: 100%;
   box-sizing: border-box;
 }
 
-.live-feed-container h2 {
-  color: #333;
-  margin-top: 0;
-  margin-bottom: 15px;
-  font-size: 1.5rem;
-  font-weight: 600;
+/* When inside top-controls, remove some of the redundant styling */
+.dashboard-top-controls .live-feed-container {
+  box-shadow: none;
+  padding: 0;
+  margin-bottom: 0;
 }
 
-/* Controls section */
+.live-feed-container h2 {
+  margin-top: 0;
+  margin-bottom: 15px;
+  color: #333;
+  font-size: 1.5rem;
+}
+
 .controls {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 15px;
+  margin-bottom: 20px;
   flex-wrap: wrap;
-  gap: 10px;
 }
 
 .toggle-btn {
-  background-color: #5c6bc0;
+  background-color: #4caf50;
   color: white;
   border: none;
-  padding: 10px 18px;
-  border-radius: 5px;
+  padding: 10px 20px;
+  border-radius: 4px;
   cursor: pointer;
   font-weight: bold;
   transition: background-color 0.3s;
 }
 
 .toggle-btn.running {
-  background-color: #ff6d00;
+  background-color: #f44336;
 }
 
 .toggle-btn:hover {
-  background-color: #3949ab;
-}
-
-.toggle-btn.running:hover {
-  background-color: #e65100;
+  opacity: 0.9;
 }
 
 .speed-controls {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 10px;
 }
 
 .speed-controls span {
-  font-size: 0.9rem;
-  color: #666;
+  font-weight: bold;
+  color: #555;
 }
 
 .speed-controls button {
-  background-color: #f5f5f5;
-  border: 1px solid #ddd;
-  padding: 5px 10px;
+  background-color: #e0e0e0;
+  border: none;
+  padding: 8px 12px;
   border-radius: 4px;
   cursor: pointer;
-  font-size: 0.85rem;
-  transition: all 0.2s;
+  transition: background-color 0.3s;
 }
 
 .speed-controls button.active {
-  background-color: #e0e0e0;
-  border-color: #aaa;
-  font-weight: bold;
+  background-color: #2196f3;
+  color: white;
 }
 
-/* Stats section */
-.stats {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-  gap: 15px;
-  margin-bottom: 20px;
-  background-color: #f9fafc;
-  padding: 15px;
+.stats-container {
+  background-color: #f9f9f9;
   border-radius: 8px;
+  padding: 15px;
+  margin-bottom: 15px;
+}
+
+.stats {
+  display: flex;
+  justify-content: space-around;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-bottom: 15px;
 }
 
 .stat-item {
   display: flex;
   flex-direction: column;
   align-items: center;
-  padding: 15px 0;
+  padding: 10px;
+  min-width: 100px;
 }
 
 .stat-value {
-  font-size: 2rem;
+  font-size: 1.8rem;
   font-weight: bold;
-  color: #3949ab;
+  color: #2196f3;
+  margin-bottom: 5px;
 }
 
 .stat-label {
   font-size: 0.9rem;
   color: #666;
-  margin-top: 5px;
-}
-
-/* Feed items */
-.feed-list {
-  min-height: 200px;
-  max-height: 400px;
-  overflow-y: auto;
-  margin-bottom: 15px;
-  border: 1px solid #eee;
-  border-radius: 8px;
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-  gap: 1px;
-  background-color: #f0f0f0;
-}
-
-.empty-feed {
-  grid-column: 1 / -1;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  background-color: white;
-  height: 200px;
   text-align: center;
-  color: #777;
-  font-style: italic;
 }
 
-.feed-item {
-  display: flex;
-  flex-direction: column;
-  padding: 12px 15px;
-  transition: background-color 0.2s;
-  background-color: white;
-}
-
-.feed-item:hover {
-  background-color: #f9f9f9;
-}
-
-.feed-item.sla-breach {
-  background-color: #fff5f5;
-}
-
-.feed-item.sla-breach:hover {
-  background-color: #ffe5e5;
-}
-
-.order-status {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  border-bottom: 1px solid #f0f0f0;
-  padding-bottom: 8px;
-  margin-bottom: 8px;
-}
-
-.order-status .emoji {
-  font-size: 1.5rem;
-}
-
-.order-time {
-  font-size: 0.75rem;
-  color: #777;
-}
-
-.order-details {
-  display: flex;
-  flex-direction: column;
-  margin-bottom: 8px;
-}
-
-.order-id {
-  font-weight: bold;
-  color: #333;
-}
-
-.order-type, .order-zone {
-  font-size: 0.85rem;
+.simulation-note {
+  font-size: 0.9rem;
   color: #666;
-  margin-top: 3px;
+  text-align: center;
+  padding: 10px;
+  border-top: 1px solid #e0e0e0;
 }
 
-.delivery-info {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-top: auto;
-  border-top: 1px solid #f0f0f0;
-  padding-top: 8px;
-}
-
-.delivery-time {
-  font-weight: bold;
-  font-size: 1.1rem;
-  color: #444;
-  display: flex;
-  align-items: center;
-}
-
-.sla-tag {
-  background-color: #f44336;
-  color: white;
-  font-size: 0.65rem;
-  padding: 2px 5px;
-  border-radius: 3px;
-  margin-left: 5px;
-  font-weight: normal;
-}
-
-.order-amount {
-  font-size: 0.9rem;
-  color: #555;
-}
-
-.feed-instructions {
-  font-size: 0.9rem;
-  color: #777;
-  background-color: #f5f5f5;
-  padding: 12px 15px;
-  border-radius: 5px;
-  border-left: 4px solid #5c6bc0;
-}
-
-.feed-instructions p {
-  margin: 5px 0;
-}
-
-/* Responsive adjustments */
 @media (max-width: 768px) {
   .controls {
     flex-direction: column;
-    align-items: stretch;
+    align-items: flex-start;
+    gap: 15px;
+  }
+  
+  .speed-controls {
+    width: 100%;
+    justify-content: space-between;
   }
   
   .stats {
-    grid-template-columns: repeat(2, 1fr);
-  }
-  
-  .feed-list {
-    grid-template-columns: 1fr;
-  }
-}
-
-@media (min-width: 1400px) {
-  .feed-list {
-    grid-template-columns: repeat(3, 1fr);
-  }
-  
-  .stats {
-    grid-template-columns: repeat(4, 1fr);
+    flex-direction: column;
+    align-items: center;
   }
 } 

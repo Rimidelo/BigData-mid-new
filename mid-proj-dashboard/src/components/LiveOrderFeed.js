@@ -2,25 +2,20 @@ import React, { useState, useEffect } from 'react';
 import { fetchLiveUpdate, generateLiveOrder } from '../utils/dataUtils';
 import './LiveOrderFeed.css';
 
-const MAX_FEED_ITEMS = 9; // Maximum number of items to display in the feed
-
 const LiveOrderFeed = ({ updateRate = 2000, slaBreachRef, slaTrendRef, avgDeliveryRef, weatherRef, timeOfDayRef, driverZoneRef }) => {
   const [isRunning, setIsRunning] = useState(false);
   const [speedMultiplier, setSpeedMultiplier] = useState(1);
-  const [feedItems, setFeedItems] = useState([]);
   const [stats, setStats] = useState({
     totalOrders: 0,
+    totalBatchedOrders: 0, // Track the total number of orders in all batches
     avgDeliveryTime: 0,
     ordersByZone: {},
-    slaBreaches: 0
+    slaBreaches: 0,
+    lastBatchSize: 0 // Track the size of the last batch
   });
 
   // Start or stop the simulation
   const toggleSimulation = () => {
-    // If stopping the simulation, clear the feed
-    if (isRunning) {
-      setFeedItems([]);
-    }
     setIsRunning(!isRunning);
   };
 
@@ -39,10 +34,7 @@ const LiveOrderFeed = ({ updateRate = 2000, slaBreachRef, slaTrendRef, avgDelive
       // Generate a new order
       const newOrder = generateLiveOrder();
       
-      // Update feed items, keeping only the most recent MAX_FEED_ITEMS
-      setFeedItems(prev => [newOrder, ...prev].slice(0, MAX_FEED_ITEMS));
-      
-      // Update stats
+      // Update stats for the individual simulated order
       setStats(prev => {
         const newTotal = prev.totalOrders + 1;
         const newAvgTime = ((prev.avgDeliveryTime * prev.totalOrders) + newOrder.delivery_minutes) / newTotal;
@@ -56,6 +48,8 @@ const LiveOrderFeed = ({ updateRate = 2000, slaBreachRef, slaTrendRef, avgDelive
         
         return {
           totalOrders: newTotal,
+          totalBatchedOrders: prev.totalBatchedOrders,
+          lastBatchSize: prev.lastBatchSize,
           avgDeliveryTime: newAvgTime,
           ordersByZone,
           slaBreaches: newSLABreaches
@@ -70,6 +64,23 @@ const LiveOrderFeed = ({ updateRate = 2000, slaBreachRef, slaTrendRef, avgDelive
         // Update charts with the new data batch
         if (dataBatch && dataBatch.length > 0) {
           console.log('Sending simulation batch to charts:', dataBatch);
+          
+          // Count the actual number of orders in this batch
+          // Each item in dataBatch typically represents multiple orders
+          let actualOrderCount = 0;
+          dataBatch.forEach(item => {
+            // Use the 'orders' field if it exists, or default to a random number between 100-500
+            actualOrderCount += (item.orders ? 
+              (typeof item.orders === 'string' ? parseInt(item.orders) : item.orders) : 
+              Math.floor(Math.random() * 400) + 100);
+          });
+          
+          // Update the stats to include the actual order count
+          setStats(prev => ({
+            ...prev,
+            totalBatchedOrders: prev.totalBatchedOrders + actualOrderCount,
+            lastBatchSize: actualOrderCount
+          }));
           
           // Update SLA breach by zone chart
           if (slaBreachRef && slaBreachRef.current) {
@@ -112,34 +123,9 @@ const LiveOrderFeed = ({ updateRate = 2000, slaBreachRef, slaTrendRef, avgDelive
     };
   }, [isRunning, updateRate, speedMultiplier, stats.totalOrders, slaBreachRef, slaTrendRef, avgDeliveryRef, weatherRef, timeOfDayRef, driverZoneRef]);
 
-  // Format the timestamp for display
-  const formatTimestamp = (timestamp) => {
-    const date = new Date(timestamp);
-    return date.toLocaleTimeString();
-  };
-
-  // Get appropriate status icon based on order status
-  const getStatusIcon = (status) => {
-    switch(status) {
-      case 'preparing':
-        return '🍳';
-      case 'in_transit':
-        return '🚚';
-      case 'delivered':
-        return '✅';
-      default:
-        return '🔄';
-    }
-  };
-
-  // Determine if an order is breaching SLA (delivery time > 45 minutes)
-  const isSLABreach = (deliveryMinutes) => {
-    return deliveryMinutes > 45;
-  };
-
   return (
     <div className="live-feed-container">
-      <h2>Live Order Feed Simulation</h2>
+      <h2>Live Data Simulation</h2>
       <div className="controls">
         <button 
           className={`toggle-btn ${isRunning ? 'running' : ''}`} 
@@ -171,62 +157,27 @@ const LiveOrderFeed = ({ updateRate = 2000, slaBreachRef, slaTrendRef, avgDelive
         </div>
       </div>
       
-      <div className="stats">
-        <div className="stat-item">
-          <span className="stat-value">{stats.totalOrders}</span>
-          <span className="stat-label">Total Orders</span>
-        </div>
-        <div className="stat-item">
-          <span className="stat-value">{stats.avgDeliveryTime.toFixed(1)}</span>
-          <span className="stat-label">Avg. Delivery (min)</span>
-        </div>
-        <div className="stat-item">
-          <span className="stat-value">{stats.slaBreaches}</span>
-          <span className="stat-label">SLA Breaches</span>
-        </div>
-        <div className="stat-item">
-          <span className="stat-value">
-            {stats.totalOrders > 0 ? ((stats.slaBreaches / stats.totalOrders) * 100).toFixed(1) : '0.0'}%
-          </span>
-          <span className="stat-label">Breach Rate</span>
-        </div>
-      </div>
-      
-      <div className="feed-list">
-        {feedItems.length > 0 ? (
-          feedItems.map((item, index) => (
-            <div 
-              key={index} 
-              className={`feed-item ${isSLABreach(item.delivery_minutes) ? 'sla-breach' : ''}`}
-            >
-              <div className="order-status">
-                <span className="emoji">{getStatusIcon(item.status)}</span>
-                <span className="order-time">{formatTimestamp(item.timestamp)}</span>
-              </div>
-              <div className="order-details">
-                <span className="order-id">{item.order_id}</span>
-                <span className="order-type">{item.cuisine_type}</span>
-                <span className="order-zone">Zone: {item.zone}</span>
-              </div>
-              <div className="delivery-info">
-                <span className="delivery-time">
-                  {item.delivery_minutes} min
-                  {isSLABreach(item.delivery_minutes) && <span className="sla-tag">SLA BREACH</span>}
-                </span>
-                <span className="order-amount">${item.total_amount}</span>
-              </div>
-            </div>
-          ))
-        ) : (
-          <div className="empty-feed">
-            <p>Start the simulation to see live orders</p>
+      <div className="stats-container">
+        <div className="stats">
+          <div className="stat-item">
+            <span className="stat-value">{stats.totalBatchedOrders.toLocaleString()}</span>
+            <span className="stat-label">Total Orders Added</span>
           </div>
-        )}
-      </div>
-      
-      <div className="feed-instructions">
-        <p>This simulation generates random orders and periodically updates the charts with new KPI data.</p>
-        <p>Start the simulation to see how the dashboard responds to new data.</p>
+          <div className="stat-item">
+            <span className="stat-value">{stats.lastBatchSize.toLocaleString()}</span>
+            <span className="stat-label">Last Batch Size</span>
+          </div>
+          <div className="stat-item">
+            <span className="stat-value">{stats.avgDeliveryTime.toFixed(1)}</span>
+            <span className="stat-label">Avg. Time (min)</span>
+          </div>
+          <div className="stat-item">
+            <span className="stat-value">
+              {stats.totalOrders > 0 ? ((stats.slaBreaches / stats.totalOrders) * 100).toFixed(1) : '0.0'}%
+            </span>
+            <span className="stat-label">Breach Rate</span>
+          </div>
+        </div>
       </div>
     </div>
   );

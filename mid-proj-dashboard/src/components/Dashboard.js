@@ -24,6 +24,18 @@ const Dashboard = () => {
         <p>This dashboard analyzes delivery performance with a focus on identifying factors contributing to SLA breaches.</p>
       </div>
       
+      <div className="dashboard-top-controls">
+        <LiveOrderFeed 
+          updateRate={500} 
+          slaBreachRef={slaBreachRef}
+          slaTrendRef={slaTrendRef}
+          avgDeliveryRef={avgDeliveryRef}
+          weatherRef={weatherRef}
+          timeOfDayRef={timeOfDayRef}
+          driverZoneRef={driverZoneRef}
+        />
+      </div>
+      
       <div className="dashboard-content">
         <div className="dashboard-grid">
           <SLABreachByZone ref={slaBreachRef} />
@@ -39,16 +51,6 @@ const Dashboard = () => {
           <SLABreachByTimeOfDay ref={timeOfDayRef} />
           <DriverZonePerformance ref={driverZoneRef} />
         </div>
-        
-        <LiveOrderFeed 
-          updateRate={500} 
-          slaBreachRef={slaBreachRef}
-          slaTrendRef={slaTrendRef}
-          avgDeliveryRef={avgDeliveryRef}
-          weatherRef={weatherRef}
-          timeOfDayRef={timeOfDayRef}
-          driverZoneRef={driverZoneRef}
-        />
       </div>
     </div>
   );
