@@ -172,7 +172,7 @@ const SLABreachTrend = forwardRef((props, ref) => {
         <ResponsiveContainer width="100%" height={400}>
           <LineChart
             data={data}
-            margin={{ top: 20, right: 30, left: 20, bottom: 30 }}
+            margin={{ top: 20, right: 30, left: 75, bottom: 30 }}
           >
             <CartesianGrid strokeDasharray="3 3" />
             <XAxis 
@@ -182,7 +182,7 @@ const SLABreachTrend = forwardRef((props, ref) => {
             />
             <YAxis 
               yAxisId="left"
-              domain={[0, 60]}
+              domain={[0, 100]}
               label={{ value: 'SLA Breach %', angle: -90, position: 'insideLeft' }}
             />
             <YAxis 
@@ -194,7 +194,7 @@ const SLABreachTrend = forwardRef((props, ref) => {
             <Tooltip 
               formatter={(value, name) => {
                 if (name === 'SLA Breach %') {
-                  return [`${value.toFixed(2)}%`, name];
+                  return [`${Math.round(value)}%`, name];
                 } else if (name === 'Total Orders') {
                   return [value, name];
                 }
@@ -202,13 +202,43 @@ const SLABreachTrend = forwardRef((props, ref) => {
               }}
               labelFormatter={(value) => `Date: ${new Date(value).toLocaleDateString()}`}
             />
-            <Legend />
+            <Legend 
+              iconType="line"
+              iconSize={20}
+              payload={[
+                { value: 'SLA Breach %', type: 'line', color: '#8884d8' },
+                { value: 'Total Orders', type: 'line', color: '#82ca9d', strokeDasharray: '4 4' }
+              ]}
+              formatter={(value, entry) => {
+                const color = entry.color;
+                return <span style={{ color: color, fontWeight: 'bold', fontSize: value === 'Total Orders' ? '16px' : '14px' }}>{value}</span>;
+              }}
+              wrapperStyle={{ paddingTop: 15 }}
+            />
             <ReferenceLine 
               y={calculateSLATarget()} 
               yAxisId="left"
-              label="Target" 
+              label={{ 
+                value: "Target", 
+                position: "left", 
+                fill: "red",
+                fontSize: 15,
+                fontWeight: "bold",
+                offset: -10,
+                dy: 0,
+                dx: -15,
+                className: "target-label",
+                background: {
+                  fill: 'white',
+                  strokeWidth: 1,
+                  r: 4,
+                  padding: [2, 4]
+                }
+              }} 
               stroke="red" 
-              strokeDasharray="3 3" 
+              strokeDasharray="3 3"
+              strokeWidth={2}
+              ifOverflow="visible"
             />
             <Line 
               type="monotone" 

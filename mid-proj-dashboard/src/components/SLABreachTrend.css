@@ -112,4 +112,82 @@
   fill: #fff;
   stroke: #8884d8;
   stroke-width: 1.5px;
+}
+
+/* Ensure the reference line label is visible */
+.sla-trend-chart .recharts-reference-line-label {
+  z-index: 9999 !important;
+  pointer-events: none;
+}
+
+.sla-trend-chart .recharts-reference-line text {
+  font-weight: bold;
+  fill: #ff0000 !important;
+  paint-order: stroke;
+  stroke: white;
+  stroke-width: 2px;
+  stroke-linecap: butt;
+  stroke-linejoin: miter;
+}
+
+/* Target label styling */
+.target-label {
+  z-index: 9999 !important;
+  font-weight: bold !important;
+  font-size: 15px !important;
+  fill: #ff0000 !important;
+  stroke: white;
+  stroke-width: 0.5px;
+  paint-order: stroke;
+}
+
+/* Legend styling */
+.recharts-default-legend .recharts-legend-item {
+  margin-right: 15px !important;
+}
+
+.recharts-legend-item-text {
+  font-size: 14px !important;
+}
+
+/* Target the Total Orders legend color */
+.recharts-legend-item:nth-child(2) .recharts-surface {
+  fill: #82ca9d !important;
+}
+
+/* Force Total Orders legend text to be green */
+.recharts-default-legend li:nth-child(2) span,
+.recharts-legend-item:nth-child(2) .recharts-legend-item-text,
+span[name="Total Orders"] {
+  color: #82ca9d !important;
+  fill: #82ca9d !important;
+  font-weight: bold !important;
+  font-size: 16px !important;
+}
+
+
+
+/* Ensure Total Orders line in the legend is colored correctly */
+.recharts-legend-item-Total-Orders path,
+.recharts-legend-item:nth-child(2) path {
+  stroke: #82ca9d !important;
+}
+
+/* Strengthen the Total Orders icon styling to ensure it's green */
+.recharts-legend-item:nth-child(2) .recharts-legend-icon,
+.recharts-default-legend li:nth-child(2) .recharts-legend-icon,
+.recharts-legend-wrapper .recharts-surface[width="14"][height="14"]:nth-of-type(2),
+.recharts-default-legend li:nth-child(2) svg,
+.recharts-legend-item-Total-Orders .recharts-surface {
+  color: #82ca9d !important;
+  fill: #fff !important;
+  stroke: #82ca9d !important;
+}
+
+/* Target the symbol inside the icon */
+.recharts-legend-item:nth-child(2) .recharts-symbols,
+.recharts-default-legend li:nth-child(2) .recharts-symbols,
+.recharts-legend-item-Total-Orders .recharts-symbols {
+  fill: #82ca9d !important;
+  stroke: #82ca9d !important;
 } 
