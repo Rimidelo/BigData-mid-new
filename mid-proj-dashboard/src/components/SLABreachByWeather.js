@@ -19,7 +19,8 @@ const FALLBACK_DATA = [
   { name: 'Sunny', breachPct: 28.5, avgTime: 39.3, totalOrders: 5800 },
   { name: 'Clouds', breachPct: 34.2, avgTime: 42.8, totalOrders: 3200 },
   { name: 'Rain', breachPct: 51.7, avgTime: 48.4, totalOrders: 2100 },
-  { name: 'Snow', breachPct: 62.3, avgTime: 54.6, totalOrders: 980 }
+  { name: 'Snow', breachPct: 62.3, avgTime: 54.6, totalOrders: 980 },
+  { name: 'Wind', breachPct: 42.5, avgTime: 46.2, totalOrders: 1450 }
 ];
 
 const SLABreachByWeather = forwardRef((props, ref) => {
@@ -31,13 +32,54 @@ const SLABreachByWeather = forwardRef((props, ref) => {
   // Colors for different weather conditions
   const getBarColor = (weather) => {
     const weatherColors = {
-      'Sunny': '#FFC658', // Yellow/Orange
-      'Clouds': '#8884D8', // Purple
-      'Rain': '#0088FE', // Blue
-      'Snow': '#82CA9D', // Green
-      'Windy': '#FF8042' // Orange
+      'Sunny': '#FFD700', // Bright yellow for sun
+      'Clouds': '#A9A9A9', // Grey for clouds
+      'Rain': '#4682B4', // Steel blue for rain
+      'Snow': '#FFFFFF', // White for snow
+      'Wind': '#87CEEB',  // Sky blue for wind
+      'Windy': '#87CEEB'  // Sky blue for wind
     };
     return weatherColors[weather] || '#8884D8';
+  };
+
+  // Weather icons for different conditions
+  const getWeatherIcon = (weather) => {
+    const icons = {
+      'Sunny': '☀️',
+      'Clouds': '☁️',
+      'Rain': '🌧️',
+      'Snow': '❄️',
+      'Wind': '💨',
+      'Windy': '💨'
+    };
+    return icons[weather] || '';
+  };
+
+  // Custom tick renderer for XAxis
+  const renderCustomAxisTick = (props) => {
+    const { x, y, payload } = props;
+    const weather = payload.value;
+    
+    // Get icon using the function with both Wind and Windy support
+    const icon = getWeatherIcon(weather);
+    
+    console.log(`Weather: ${weather}, Icon: ${icon}`); // Debug log
+    
+    return (
+      <g transform={`translate(${x},${y})`}>
+        <text 
+          x={0} 
+          y={0} 
+          dy={16} 
+          textAnchor="middle" 
+          fill="#666"
+          fontSize="14px"
+          style={{ fontFamily: "'Segoe UI Emoji', 'Apple Color Emoji', sans-serif" }}
+        >
+          {icon} {weather}
+        </text>
+      </g>
+    );
   };
 
   // Expose the updateWithLiveData method to parent components
@@ -155,6 +197,7 @@ const SLABreachByWeather = forwardRef((props, ref) => {
             <CartesianGrid strokeDasharray="3 3" />
             <XAxis 
               dataKey="name" 
+              tick={renderCustomAxisTick}
               label={{ value: 'Weather Condition', position: 'insideBottom', offset: -10 }}
             />
             <YAxis 
@@ -165,7 +208,13 @@ const SLABreachByWeather = forwardRef((props, ref) => {
             <YAxis 
               yAxisId="right"
               orientation="right"
-              label={{ value: 'Avg Delivery Time (min)', angle: 90, position: 'insideRight' }}
+              label={{ 
+                value: 'Avg Delivery Time (min)', 
+                angle: 90, 
+                position: 'insideRight',
+                offset: 15,
+                dy: 80
+              }}
               domain={[0, 'dataMax + 5']}
             />
             <Tooltip
@@ -179,8 +228,24 @@ const SLABreachByWeather = forwardRef((props, ref) => {
                 }
                 return [value, name];
               }}
+              labelFormatter={(value) => {
+                const icon = getWeatherIcon(value);
+                return `${icon} ${value}`;
+              }}
             />
-            <Legend />
+            <Legend 
+              wrapperStyle={{ paddingTop: 30, marginTop: 20 }}
+              payload={[
+                { value: 'SLA Breach %', type: 'square', color: '#8884d8' },
+                { value: 'Avg Delivery Time', type: 'square', color: '#82ca9d' }
+              ]}
+              formatter={(value, entry) => {
+                if (value === 'Avg Delivery Time') {
+                  return <span style={{ fontWeight: 'normal', color: '#82ca9d' }}>{value}</span>;
+                }
+                return <span style={{ fontWeight: 'bold' }}>{value}</span>;
+              }}
+            />
             <Bar 
               yAxisId="left"
               dataKey="breachPct" 
@@ -189,7 +254,7 @@ const SLABreachByWeather = forwardRef((props, ref) => {
               fill="#8884d8"
             >
               {data.map((entry, index) => (
-                <Cell key={`cell-${index}`} fill={getBarColor(entry.name)} />
+                <Cell key={`cell-${index}`} fill="#8884d8" stroke="#6b68b2" strokeWidth={1} />
               ))}
             </Bar>
             <Bar 
