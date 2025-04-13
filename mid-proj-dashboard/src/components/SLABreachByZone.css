@@ -157,4 +157,31 @@
 .recharts-tooltip-item-name,
 .recharts-tooltip-item-value {
   font-size: 0.85rem;
+}
+
+/* Explicitly style the Average Delivery Time bars to be red */
+.recharts-bar-rectangle[name="Avg Delivery Time"] path {
+  fill: #e74c3c !important;
+}
+
+/* Make all SLA Breach bars purple */
+.recharts-bar-rectangle[name="SLA Breach %"] path {
+  fill: #8884d8 !important;
+}
+
+/* Make the Avg Delivery Time text red in the legend - with additional selectors */
+.recharts-legend-item:nth-child(2) .recharts-legend-item-text,
+.recharts-default-legend li:nth-child(2) span,
+g.recharts-legend-item:nth-child(2) text {
+  color: #e74c3c !important;
+  fill: #e74c3c !important;
+}
+
+/* Make the rectangle next to "Avg Delivery Time" in the legend red */
+.recharts-legend-item:nth-child(2) .recharts-legend-icon,
+.recharts-default-legend li:nth-child(2) .recharts-surface,
+g.recharts-legend-item:nth-child(2) rect {
+  fill: #e74c3c !important;
+  stroke: #e74c3c !important;
+  color: #e74c3c !important;
 } 

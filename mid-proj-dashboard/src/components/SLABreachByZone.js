@@ -1,5 +1,5 @@
 import React, { useState, useEffect, forwardRef, useImperativeHandle } from 'react';
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, Cell } from 'recharts';
 import { fetchSLABreachData, aggregateSLABreachByZone } from '../utils/dataUtils';
 import './SLABreachByZone.css';
 
@@ -152,6 +152,61 @@ const SLABreachByZone = forwardRef((props, ref) => {
     }
   }, [props.liveData, initialDataLoaded]);
 
+  // Get color based on delivery time
+  const getDeliveryTimeColor = (time) => {
+    if (time <= 35) return '#4caf50'; // Good - Green
+    if (time <= 45) return '#ff9800'; // Warning - Orange
+    return '#e74c3c'; // Bad - Red
+  };
+
+  // Get color for zone labels
+  const getZoneColor = (zone) => {
+    const zoneColors = {
+      'Z1': '#8884d8', // Purple
+      'Z2': '#82ca9d', // Green
+      'Z3': '#ffc658', // Yellow
+      'Z4': '#ff8042', // Orange
+      'Z5': '#0088fe'  // Blue
+    };
+    return zoneColors[zone] || '#333';
+  };
+
+  // Custom tick renderer for XAxis
+  const renderCustomAxisTick = (props) => {
+    const { x, y, payload } = props;
+    const zone = payload.value;
+    return (
+      <g transform={`translate(${x},${y})`}>
+        <text 
+          x={0} 
+          y={0} 
+          dy={16} 
+          textAnchor="middle" 
+          fill={getZoneColor(zone)}
+          fontWeight="bold"
+          fontSize="14px"
+        >
+          {zone}
+        </text>
+      </g>
+    );
+  };
+
+  // Custom legend formatter
+  const renderColorfulLegendText = (value, entry) => {
+    const { color } = entry;
+    const style = {
+      fontSize: '14px',
+      marginLeft: '5px'
+    };
+    
+    if (value === 'Avg Delivery Time') {
+      return <span style={{ ...style, color: '#e74c3c', fontWeight: 'normal' }}>{value}</span>;
+    }
+    
+    return <span style={style}>{value}</span>;
+  };
+
   if (loading) {
     return <div className="loading">Loading SLA breach data...</div>;
   }
@@ -162,16 +217,6 @@ const SLABreachByZone = forwardRef((props, ref) => {
       {error && <div className="error-banner">{error}</div>}
       <div className="live-data-indicator">Updates in real-time with the Live Order Feed</div>
       <div className={`sla-breach-chart ${isUpdating ? 'updating' : ''}`}>
-        <div className="data-source-legend">
-          <div className="legend-item">
-            <span className="legend-color historical"></span>
-            <span>Historical Data</span>
-          </div>
-          <div className="legend-item">
-            <span className="legend-color simulation"></span>
-            <span>Simulation Data</span>
-          </div>
-        </div>
         <ResponsiveContainer width="100%" height={400}>
           <BarChart
             data={data}
@@ -183,7 +228,10 @@ const SLABreachByZone = forwardRef((props, ref) => {
             }}
           >
             <CartesianGrid strokeDasharray="3 3" />
-            <XAxis dataKey="zone" />
+            <XAxis 
+              dataKey="zone" 
+              tick={renderCustomAxisTick}
+            />
             <YAxis 
               yAxisId="left"
               label={{ value: 'SLA Breach %', angle: -90, position: 'insideLeft' }}
@@ -208,7 +256,15 @@ const SLABreachByZone = forwardRef((props, ref) => {
               }}
               labelFormatter={(value) => `Zone ${value}`}
             />
-            <Legend />
+            <Legend 
+              formatter={renderColorfulLegendText}
+              iconType="square"
+              wrapperStyle={{ paddingTop: 10 }}
+              payload={[
+                { value: 'SLA Breach %', type: 'square', color: '#8884d8' },
+                { value: 'Avg Delivery Time', type: 'square', color: '#e74c3c' }
+              ]}
+            />
             <Bar 
               dataKey="averageSLABreachPct" 
               name="SLA Breach %" 
@@ -216,14 +272,22 @@ const SLABreachByZone = forwardRef((props, ref) => {
               fill="#8884d8"
               animationDuration={500}
               style={{ filter: 'drop-shadow(0px 0px 3px rgba(0,0,0,0.5))' }}
-            />
+            >
+              {data.map((entry, index) => (
+                <Cell key={`breach-cell-${index}`} fill="#8884d8" />
+              ))}
+            </Bar>
             <Bar 
               dataKey="averageDeliveryTime" 
               name="Avg Delivery Time" 
+              key="avg-delivery-time-bar"
               yAxisId="right"
-              fill="#82ca9d"
               animationDuration={500}
-            />
+            >
+              {data.map((entry, index) => (
+                <Cell key={`delivery-cell-${index}`} fill="#ff0000" />
+              ))}
+            </Bar>
           </BarChart>
         </ResponsiveContainer>
       </div>
