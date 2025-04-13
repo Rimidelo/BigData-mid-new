@@ -1,5 +1,3 @@
-// Data utility functions for the dashboard
-import axios from 'axios';
 
 // Track which data has been used for initial load vs simulation
 let initialDataLoaded = false;
@@ -44,19 +42,6 @@ const FALLBACK_DATA = [
   { order_date: '2024-04-04', zone: 'Z2', orders: 1340, avg_delivery_min: 43.89, sla_breach_pct: 0.44 },
   { order_date: '2024-04-05', zone: 'Z1', orders: 1450, avg_delivery_min: 45.75, sla_breach_pct: 0.50 },
   { order_date: '2024-04-05', zone: 'Z2', orders: 1380, avg_delivery_min: 44.32, sla_breach_pct: 0.48 }
-];
-
-const SIMULATION_DATA = [
-  { order_date: '2024-04-06', zone: 'Z1', orders: 1620, avg_delivery_min: 47.12, sla_breach_pct: 0.53 },
-  { order_date: '2024-04-06', zone: 'Z2', orders: 1580, avg_delivery_min: 45.87, sla_breach_pct: 0.51 },
-  { order_date: '2024-04-07', zone: 'Z1', orders: 1590, avg_delivery_min: 46.45, sla_breach_pct: 0.54 },
-  { order_date: '2024-04-07', zone: 'Z2', orders: 1540, avg_delivery_min: 44.98, sla_breach_pct: 0.49 },
-  { order_date: '2024-04-08', zone: 'Z1', orders: 1420, avg_delivery_min: 46.35, sla_breach_pct: 0.52 },
-  { order_date: '2024-04-08', zone: 'Z2', orders: 1390, avg_delivery_min: 44.43, sla_breach_pct: 0.47 },
-  { order_date: '2024-04-09', zone: 'Z1', orders: 1405, avg_delivery_min: 45.89, sla_breach_pct: 0.51 },
-  { order_date: '2024-04-09', zone: 'Z2', orders: 1375, avg_delivery_min: 43.95, sla_breach_pct: 0.46 },
-  { order_date: '2024-04-10', zone: 'Z1', orders: 1438, avg_delivery_min: 46.12, sla_breach_pct: 0.52 },
-  { order_date: '2024-04-10', zone: 'Z2', orders: 1402, avg_delivery_min: 44.56, sla_breach_pct: 0.48 }
 ];
 
 // Function to fetch actual data from the CSV file in public folder
@@ -633,6 +618,76 @@ export const aggregateSLABreachByTimeOfDay = (data) => {
     });
   } catch (err) {
     console.error('Error aggregating time period data:', err);
+    return [];
+  }
+};
+
+// Function to aggregate driver zone performance data
+export const aggregateDriverZonePerformance = (data) => {
+  if (!data || !Array.isArray(data) || data.length === 0) {
+    return [];
+  }
+  
+  try {
+    // Group by zone
+    const zoneMap = {};
+    
+    data.forEach(item => {
+      if (!item.zone) return;
+      
+      if (!zoneMap[item.zone]) {
+        zoneMap[item.zone] = {
+          totalOrders: 0,
+          totalTime: 0,
+          slaBreaches: 0,
+          avgDelay: 0,
+          // Track count separately to calculate proper averages
+          dataPoints: 0
+        };
+      }
+      
+      const orders = typeof item.orders === 'string' 
+        ? parseInt(item.orders) 
+        : item.orders || 0;
+      
+      const avgDeliveryMin = typeof item.avg_delivery_min === 'string'
+        ? parseFloat(item.avg_delivery_min)
+        : item.avg_delivery_min || 0;
+      
+      // Calculate delay as delivery time - SLA threshold (45 min)
+      const slaThreshold = 45;
+      const delay = Math.max(0, avgDeliveryMin - slaThreshold);
+      
+      zoneMap[item.zone].totalOrders += orders;
+      zoneMap[item.zone].totalTime += avgDeliveryMin * orders;
+      zoneMap[item.zone].avgDelay = (zoneMap[item.zone].avgDelay * zoneMap[item.zone].dataPoints + delay) / (zoneMap[item.zone].dataPoints + 1);
+      zoneMap[item.zone].dataPoints += 1;
+      
+      if (avgDeliveryMin > slaThreshold) {
+        zoneMap[item.zone].slaBreaches += orders;
+      }
+    });
+    
+    // Format data for chart and sort by total orders
+    return Object.keys(zoneMap).map(zone => {
+      const zoneData = zoneMap[zone];
+      const avgTime = zoneData.totalOrders > 0 
+        ? zoneData.totalTime / zoneData.totalOrders 
+        : 0;
+      const breachPct = zoneData.totalOrders > 0 
+        ? (zoneData.slaBreaches / zoneData.totalOrders) * 100 
+        : 0;
+        
+      return {
+        name: zone,
+        totalOrders: zoneData.totalOrders,
+        avgTime: Math.round(avgTime * 10) / 10,
+        avgDelay: Math.round(zoneData.avgDelay * 10) / 10,
+        breachPct: Math.round(breachPct * 10) / 10
+      };
+    }).sort((a, b) => b.totalOrders - a.totalOrders);
+  } catch (err) {
+    console.error('Error aggregating driver zone performance data:', err);
     return [];
   }
 }; 

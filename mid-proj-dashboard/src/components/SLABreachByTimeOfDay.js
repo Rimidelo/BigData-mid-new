@@ -145,48 +145,6 @@ const SLABreachByTimeOfDay = forwardRef((props, ref) => {
     loadData();
   }, []);
 
-  // Custom box renderer for boxplot
-  const renderBoxes = (data) => {
-    return data.map((entry, index) => {
-      const boxColor = getBarColor(entry.name);
-      const boxWidth = 40;
-      const x = index * 100 + 50; // Center in each category
-      const y = 400 - entry.max * 4; // Scale to fit chart
-      const height = (entry.max - entry.min) * 4;
-      
-      return (
-        <g key={`box-${index}`}>
-          {/* Whiskers */}
-          <line x1={x} y1={400 - entry.max * 4} x2={x} y2={400 - entry.q3 * 4} stroke={boxColor} />
-          <line x1={x} y1={400 - entry.min * 4} x2={x} y2={400 - entry.q1 * 4} stroke={boxColor} />
-          <line x1={x - 10} y1={400 - entry.max * 4} x2={x + 10} y2={400 - entry.max * 4} stroke={boxColor} />
-          <line x1={x - 10} y1={400 - entry.min * 4} x2={x + 10} y2={400 - entry.min * 4} stroke={boxColor} />
-          
-          {/* Box */}
-          <rect
-            x={x - boxWidth / 2}
-            y={400 - entry.q3 * 4}
-            width={boxWidth}
-            height={(entry.q3 - entry.q1) * 4}
-            fill={boxColor}
-            stroke="#000"
-            opacity={0.7}
-          />
-          
-          {/* Median */}
-          <line 
-            x1={x - boxWidth / 2} 
-            y1={400 - entry.median * 4} 
-            x2={x + boxWidth / 2} 
-            y2={400 - entry.median * 4} 
-            stroke="#000" 
-            strokeWidth={2} 
-          />
-        </g>
-      );
-    });
-  };
-
   if (loading) {
     return <div className="loading">Loading time of day data...</div>;
   }

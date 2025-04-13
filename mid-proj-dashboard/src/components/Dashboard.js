@@ -4,6 +4,7 @@ import SLABreachTrend from './SLABreachTrend';
 import AvgDeliveryTimeByType from './AvgDeliveryTimeByType';
 import SLABreachByWeather from './SLABreachByWeather';
 import SLABreachByTimeOfDay from './SLABreachByTimeOfDay';
+import DriverZonePerformance from './DriverZonePerformance';
 import LiveOrderFeed from './LiveOrderFeed';
 import './Dashboard.css';
 
@@ -14,6 +15,7 @@ const Dashboard = () => {
   const avgDeliveryRef = useRef();
   const weatherRef = useRef();
   const timeOfDayRef = useRef();
+  const driverZoneRef = useRef();
 
   return (
     <div className="dashboard">
@@ -35,6 +37,7 @@ const Dashboard = () => {
         
         <div className="dashboard-grid">
           <SLABreachByTimeOfDay ref={timeOfDayRef} />
+          <DriverZonePerformance ref={driverZoneRef} />
         </div>
         
         <LiveOrderFeed 
@@ -44,6 +47,7 @@ const Dashboard = () => {
           avgDeliveryRef={avgDeliveryRef}
           weatherRef={weatherRef}
           timeOfDayRef={timeOfDayRef}
+          driverZoneRef={driverZoneRef}
         />
       </div>
     </div>
