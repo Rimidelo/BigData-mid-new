@@ -121,4 +121,49 @@
 /* Custom styling for label lists */
 .recharts-label-list text {
   font-weight: 500;
+}
+
+/* Style for Total Orders text in legend */
+.zone-performance-chart .recharts-legend-item:nth-child(1) .recharts-legend-item-text,
+.zone-performance-chart .recharts-default-legend li:nth-child(1) span {
+  color: #8884d8 !important;
+  font-weight: bold !important;
+}
+
+/* Style for Avg Delay text in legend */
+.zone-performance-chart .recharts-legend-item:nth-child(2) .recharts-legend-item-text,
+.zone-performance-chart .recharts-default-legend li:nth-child(2) span {
+  color: #e74c3c !important;
+  font-weight: bold !important;
+}
+
+/* Style for Total Orders bars */
+.zone-performance-chart .recharts-bar-rectangles[name="Total Orders"] rect {
+  fill: #8884d8 !important;
+}
+
+/* Style for Avg Delay bars */
+.zone-performance-chart .recharts-bar-rectangles[name="Avg Delay Beyond SLA"] rect {
+  fill: #e74c3c !important;
+}
+
+/* Make sure legend icons match bar colors */
+.zone-performance-chart .recharts-legend-item:nth-child(1) .recharts-surface rect {
+  fill: #8884d8 !important;
+  stroke: #8884d8 !important;
+}
+
+/* Enhanced styling for the Avg Delay legend rectangle */
+.zone-performance-chart .recharts-legend-item:nth-child(2) .recharts-surface *,
+.zone-performance-chart .recharts-default-legend li:nth-child(2) .recharts-surface *,
+.zone-performance-chart .recharts-legend-item:nth-child(2) .recharts-legend-icon,
+.zone-performance-chart .recharts-legend-item-Avg-Delay-Beyond-SLA .recharts-surface rect,
+.recharts-legend-wrapper rect[fill="#e74c3c"] {
+  fill: #e74c3c !important;
+  stroke: #e74c3c !important;
+}
+
+/* Add margin to legend to add more space between chart and labels */
+.zone-performance-chart .recharts-legend-wrapper {
+  margin-top: 20px !important;
 } 

@@ -182,12 +182,24 @@ const DriverZonePerformance = forwardRef((props, ref) => {
             />
             <YAxis 
               yAxisId="left"
-              label={{ value: 'Total Orders', angle: -90, position: 'insideLeft' }}
+              label={{ 
+                value: 'Total Orders', 
+                angle: -90, 
+                position: 'insideLeft',
+                offset: 0,
+                dy: 120 // Increase vertical offset to move label further down
+              }}
             />
             <YAxis 
               yAxisId="right"
               orientation="right"
-              label={{ value: 'Avg Delay (min)', angle: 90, position: 'insideRight' }}
+              label={{ 
+                value: 'Avg Delay (min)', 
+                angle: 90, 
+                position: 'insideRight',
+                offset: 15,
+                dy: 120 // Increase vertical offset to move label further down
+              }}
               domain={[0, 'dataMax + 1']}
             />
             <Tooltip
@@ -204,15 +216,32 @@ const DriverZonePerformance = forwardRef((props, ref) => {
                 return [value, name];
               }}
             />
-            <Legend />
+            <Legend 
+              payload={[
+                { value: 'Total Orders', type: 'square', color: '#8884d8' },
+                { value: 'Avg Delay Beyond SLA', type: 'square', color: '#e74c3c' }
+              ]}
+              formatter={(value, entry) => {
+                if (value === 'Total Orders') {
+                  return <span style={{ color: '#8884d8', fontWeight: 'bold' }}>{value}</span>;
+                } else if (value === 'Avg Delay Beyond SLA') {
+                  return <span style={{ color: '#e74c3c', fontWeight: 'bold' }}>{value}</span>;
+                }
+                return <span>{value}</span>;
+              }}
+              iconSize={15}
+              iconType="square"
+              wrapperStyle={{ marginTop: 25, paddingTop: 15 }}
+            />
             <Bar 
               yAxisId="left"
               dataKey="totalOrders" 
               name="Total Orders" 
               animationDuration={500}
+              fill="#8884d8"
             >
               {data.map((entry, index) => (
-                <Cell key={`cell-${index}`} fill={getBarColor(entry.name)} />
+                <Cell key={`cell-${index}`} fill="#8884d8" />
               ))}
               <LabelList dataKey="totalOrders" position="top" fill="#333" fontSize={12} />
             </Bar>
@@ -221,9 +250,10 @@ const DriverZonePerformance = forwardRef((props, ref) => {
               dataKey="avgDelay" 
               name="Avg Delay Beyond SLA" 
               animationDuration={500}
+              fill="#e74c3c"
             >
               {data.map((entry, index) => (
-                <Cell key={`cell-delay-${index}`} fill={getDelayColor(entry.avgDelay)} />
+                <Cell key={`cell-delay-${index}`} fill="#e74c3c" />
               ))}
               <LabelList dataKey="avgDelay" position="top" fill="#333" fontSize={12} formatter={(value) => `${value} min`} />
             </Bar>
