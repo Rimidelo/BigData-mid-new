@@ -206,7 +206,6 @@ const AvgDeliveryTimeByType = forwardRef((props, ref) => {
               }}
               labelFormatter={(value) => `Zone ${value}`}
             />
-            <Legend />
             <Bar 
               dataKey="avgTime" 
               name="Avg Delivery Time" 
