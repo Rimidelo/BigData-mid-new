@@ -169,13 +169,25 @@ const SLABreachByTimeOfDay = forwardRef((props, ref) => {
             />
             <YAxis 
               yAxisId="left"
-              label={{ value: 'SLA Breach %', angle: -90, position: 'insideLeft' }}
+              label={{ 
+                value: 'SLA Breach %', 
+                angle: -90, 
+                position: 'insideLeft',
+                offset: 0,
+                dy: 80 // Move the SLA Breach % label down
+              }}
               domain={[0, 100]}
             />
             <YAxis 
               yAxisId="right"
               orientation="right"
-              label={{ value: 'Avg Delivery Time (min)', angle: 90, position: 'insideRight' }}
+              label={{ 
+                value: 'Avg Delivery Time (min)', 
+                angle: 90, 
+                position: 'insideRight',
+                offset: 15,
+                dy: 80 // Move label down
+              }}
               domain={[0, 'dataMax + 5']}
             />
             <Tooltip
@@ -209,8 +221,35 @@ const SLABreachByTimeOfDay = forwardRef((props, ref) => {
                 return null;
               }}
             />
-            <Legend />
-            <ReferenceLine yAxisId="right" y={45} stroke="red" strokeDasharray="3 3" label="SLA Threshold" />
+            <Legend 
+              payload={[
+                { value: 'SLA Breach %', type: 'square', color: '#8884d8' },
+                { value: 'Avg Delivery Time', type: 'line', color: '#ff7300', strokeWidth: 3 }
+              ]}
+              formatter={(value, entry) => {
+                if (value === 'Avg Delivery Time') {
+                  return <span style={{ fontWeight: 'normal', color: '#ff7300' }}>{value}</span>;
+                }
+                return <span style={{ fontWeight: 'bold' }}>{value}</span>;
+              }}
+              iconSize={20}
+              wrapperStyle={{ paddingTop: 15 }}
+            />
+            <ReferenceLine 
+              yAxisId="right" 
+              y={45} 
+              stroke="red" 
+              strokeDasharray="3 3" 
+              label={{
+                value: "Threshold",
+                position: "left",
+                fill: "red",
+                fontSize: 14,
+                fontWeight: "bold",
+                offset: -10,
+                dx: -15
+              }}
+            />
             <Bar 
               yAxisId="left"
               dataKey="breachPct" 

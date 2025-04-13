@@ -150,4 +150,30 @@
   font-size: 0.8rem;
   font-weight: bold;
   fill: #d32f2f;
+}
+
+/* Style for Avg Delivery Time in legend */
+.time-chart .recharts-legend-item:nth-child(2) .recharts-legend-item-text,
+.time-chart .recharts-default-legend li:nth-child(2) span {
+  font-weight: normal !important;
+  color: #ff7300 !important;
+}
+
+/* Style for Avg Delivery Time icon in legend - enhanced selectors */
+.time-chart .recharts-legend-item:nth-child(2) .recharts-surface line,
+.time-chart .recharts-default-legend li:nth-child(2) .recharts-surface,
+.time-chart .recharts-legend-item:nth-child(2) .recharts-surface path,
+.time-chart .recharts-legend-item:nth-child(2) .recharts-legend-icon,
+.time-chart .recharts-default-legend li:nth-child(2) path,
+.recharts-legend-wrapper rect[fill="#ff7300"] {
+  stroke: #ff7300 !important;
+  fill: #ff7300 !important;
+  color: #ff7300 !important;
+}
+
+/* Make the SLA Threshold text visible outside the chart */
+.time-chart .recharts-reference-line-label {
+  z-index: 9999 !important;
+  font-weight: bold;
+  fill: #ff0000 !important;
 } 
