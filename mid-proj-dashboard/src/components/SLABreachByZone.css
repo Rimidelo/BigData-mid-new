@@ -1,0 +1,187 @@
+.sla-breach-container {
+  background-color: white;
+  border-radius: 10px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  padding: 20px;
+  margin-bottom: 20px;
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.sla-breach-container h2 {
+  margin-top: 0;
+  color: #333;
+  font-size: 1.5rem;
+  font-weight: 600;
+}
+
+.live-data-indicator {
+  font-size: 0.8rem;
+  color: #777;
+  font-style: italic;
+  margin-bottom: 5px;
+}
+
+.live-data-indicator::before {
+  content: "";
+  display: inline-block;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background-color: #4caf50;
+  margin-right: 8px;
+  animation: pulse 1.5s infinite;
+}
+
+.data-source-legend {
+  display: flex;
+  margin-bottom: 10px;
+  justify-content: flex-end;
+}
+
+.legend-item {
+  display: flex;
+  align-items: center;
+  margin-left: 15px;
+  font-size: 0.8rem;
+  color: #666;
+}
+
+.legend-color {
+  display: inline-block;
+  width: 12px;
+  height: 12px;
+  margin-right: 5px;
+  border-radius: 3px;
+}
+
+.legend-color.historical {
+  background-color: #8884d8;
+}
+
+.legend-color.simulation {
+  background-color: #ff6b8b;
+}
+
+.sla-breach-chart {
+  background-color: #f9f9f9;
+  border-radius: 8px;
+  padding: 15px;
+  margin: 10px 0;
+  height: 450px;
+  min-height: 450px;
+  transition: all 0.3s ease;
+}
+
+.sla-breach-chart.updating {
+  background-color: #f0f0f5;
+  box-shadow: 0 0 20px rgba(0, 0, 255, 0.1);
+}
+
+/* Add indicator for real-time updates */
+.sla-breach-chart::after {
+  content: "Live Updates";
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  background-color: rgba(0, 0, 0, 0.6);
+  color: white;
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 12px;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.sla-breach-chart.updating::after {
+  opacity: 1;
+  animation: pulse 1.5s infinite;
+}
+
+@keyframes pulse {
+  0% { opacity: 0.6; }
+  50% { opacity: 1; }
+  100% { opacity: 0.6; }
+}
+
+.sla-breach-insights {
+  margin-top: 10px;
+}
+
+.sla-breach-insights h3 {
+  font-size: 1.1rem;
+  margin-bottom: 10px;
+  color: #555;
+}
+
+.sla-breach-insights ul {
+  padding-left: 20px;
+  margin: 0;
+  font-size: 0.9rem;
+  color: #666;
+}
+
+.sla-breach-insights li {
+  margin-bottom: 5px;
+  line-height: 1.4;
+}
+
+.error-banner {
+  background-color: #fff8f8;
+  border-left: 4px solid #ff6b6b;
+  padding: 10px 15px;
+  margin-bottom: 15px;
+  color: #d32f2f;
+  font-size: 0.9rem;
+}
+
+.loading {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 300px;
+  font-size: 1.2rem;
+  color: #777;
+  background-color: #f9f9f9;
+  border-radius: 10px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+}
+
+/* Recharts customization */
+.recharts-wrapper {
+  margin: 0 auto;
+}
+
+.recharts-tooltip-item-name,
+.recharts-tooltip-item-value {
+  font-size: 0.85rem;
+}
+
+/* Explicitly style the Average Delivery Time bars to be red */
+.recharts-bar-rectangle[name="Avg Delivery Time"] path {
+  fill: #e74c3c !important;
+}
+
+/* Make all SLA Breach bars purple */
+.recharts-bar-rectangle[name="SLA Breach %"] path {
+  fill: #8884d8 !important;
+}
+
+/* Make the Avg Delivery Time text red in the legend - with additional selectors */
+.recharts-legend-item:nth-child(2) .recharts-legend-item-text,
+.recharts-default-legend li:nth-child(2) span,
+g.recharts-legend-item:nth-child(2) text {
+  color: #e74c3c !important;
+  fill: #e74c3c !important;
+}
+
+/* Make the rectangle next to "Avg Delivery Time" in the legend red */
+.recharts-legend-item:nth-child(2) .recharts-legend-icon,
+.recharts-default-legend li:nth-child(2) .recharts-surface,
+g.recharts-legend-item:nth-child(2) rect {
+  fill: #e74c3c !important;
+  stroke: #e74c3c !important;
+  color: #e74c3c !important;
+} 

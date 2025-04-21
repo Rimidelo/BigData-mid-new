@@ -1,0 +1,179 @@
+.time-container {
+  background-color: white;
+  border-radius: 10px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  padding: 20px;
+  margin-bottom: 20px;
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.time-container h2 {
+  margin: 0 0 10px 0;
+  color: #333;
+  font-size: 1.5rem;
+  font-weight: 600;
+}
+
+.time-chart {
+  background-color: #f9f9f9;
+  border-radius: 8px;
+  padding: 15px;
+  margin: 10px 0;
+  height: 450px;
+  min-height: 450px;
+  transition: all 0.3s ease;
+}
+
+.time-chart.updating {
+  background-color: #f0f0ff;
+  box-shadow: 0 0 20px rgba(136, 132, 216, 0.3);
+}
+
+.live-data-indicator {
+  font-size: 0.8rem;
+  margin-bottom: 5px;
+  color: #777;
+  font-style: italic;
+}
+
+.error-banner {
+  background-color: #fff8f8;
+  border-left: 4px solid #ff6b6b;
+  padding: 10px 15px;
+  margin-bottom: 15px;
+  color: #d32f2f;
+  font-size: 0.9rem;
+}
+
+.loading {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 300px;
+  font-size: 1.2rem;
+  color: #777;
+  background-color: #f9f9f9;
+  border-radius: 10px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+}
+
+.time-insights {
+  margin-top: 15px;
+  padding: 15px;
+  background-color: #f5f5f5;
+  border-radius: 8px;
+  border-left: 4px solid #6A5ACD;
+}
+
+.time-insights h3 {
+  margin-top: 0;
+  margin-bottom: 10px;
+  font-size: 1.1rem;
+  color: #444;
+}
+
+.insights-list {
+  list-style-type: none;
+  padding-left: 0;
+  margin: 0;
+}
+
+.insights-list li {
+  margin-bottom: 8px;
+  font-size: 0.95rem;
+  color: #555;
+  line-height: 1.4;
+  position: relative;
+  padding-left: 18px;
+}
+
+.insights-list li:before {
+  content: '●';
+  position: absolute;
+  left: 0;
+  color: #6A5ACD;
+}
+
+/* Custom tooltip styling */
+.custom-tooltip {
+  background-color: rgba(255, 255, 255, 0.95);
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  padding: 12px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+  max-width: 300px;
+}
+
+.time-period {
+  font-weight: bold;
+  font-size: 1.1rem;
+  margin: 0 0 8px;
+  border-bottom: 1px solid #eee;
+  padding-bottom: 4px;
+  color: #333;
+}
+
+.custom-tooltip p {
+  margin: 4px 0;
+  font-size: 0.9rem;
+  color: #555;
+}
+
+.boxplot-data {
+  margin-top: 8px;
+  font-size: 0.8rem;
+  color: #777;
+  border-top: 1px dashed #ddd;
+  padding-top: 6px;
+}
+
+/* Animation for cell updating */
+@keyframes pulse {
+  0% { opacity: 1; }
+  50% { opacity: 0.6; }
+  100% { opacity: 1; }
+}
+
+.updating .recharts-rectangle {
+  animation: pulse 1s ease-in-out;
+}
+
+/* Make reference line more visible */
+.recharts-reference-line line {
+  stroke-width: 2;
+}
+
+.recharts-reference-line-text {
+  font-size: 0.8rem;
+  font-weight: bold;
+  fill: #d32f2f;
+}
+
+/* Style for Avg Delivery Time in legend */
+.time-chart .recharts-legend-item:nth-child(2) .recharts-legend-item-text,
+.time-chart .recharts-default-legend li:nth-child(2) span {
+  font-weight: normal !important;
+  color: #ff7300 !important;
+}
+
+/* Style for Avg Delivery Time icon in legend - enhanced selectors */
+.time-chart .recharts-legend-item:nth-child(2) .recharts-surface line,
+.time-chart .recharts-default-legend li:nth-child(2) .recharts-surface,
+.time-chart .recharts-legend-item:nth-child(2) .recharts-surface path,
+.time-chart .recharts-legend-item:nth-child(2) .recharts-legend-icon,
+.time-chart .recharts-default-legend li:nth-child(2) path,
+.recharts-legend-wrapper rect[fill="#ff7300"] {
+  stroke: #ff7300 !important;
+  fill: #ff7300 !important;
+  color: #ff7300 !important;
+}
+
+/* Make the SLA Threshold text visible outside the chart */
+.time-chart .recharts-reference-line-label {
+  z-index: 9999 !important;
+  font-weight: bold;
+  fill: #ff0000 !important;
+} 

@@ -1,0 +1,238 @@
+.weather-container {
+  background-color: white;
+  border-radius: 10px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  padding: 20px;
+  margin-bottom: 20px;
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.weather-container h2 {
+  margin: 0 0 10px 0;
+  color: #333;
+  font-size: 1.5rem;
+  font-weight: 600;
+}
+
+.weather-chart {
+  background-color: #f9f9f9;
+  border-radius: 8px;
+  padding: 15px;
+  margin: 10px 0;
+  height: 450px;
+  min-height: 450px;
+  transition: all 0.3s ease;
+}
+
+.weather-chart.updating {
+  background-color: #f0f0ff;
+  box-shadow: 0 0 20px rgba(136, 132, 216, 0.3);
+}
+
+.live-data-indicator {
+  font-size: 0.8rem;
+  margin-bottom: 5px;
+  color: #777;
+  font-style: italic;
+}
+
+.error-banner {
+  background-color: #fff8f8;
+  border-left: 4px solid #ff6b6b;
+  padding: 10px 15px;
+  margin-bottom: 15px;
+  color: #d32f2f;
+  font-size: 0.9rem;
+}
+
+.loading {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 300px;
+  font-size: 1.2rem;
+  color: #777;
+  background-color: #f9f9f9;
+  border-radius: 10px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+}
+
+.weather-insights {
+  margin-top: 15px;
+  padding: 15px;
+  background-color: #f5f5f5;
+  border-radius: 8px;
+  border-left: 4px solid #5c6bc0;
+}
+
+.weather-insights h3 {
+  margin-top: 0;
+  margin-bottom: 10px;
+  font-size: 1.1rem;
+  color: #444;
+}
+
+.insights-list {
+  list-style-type: none;
+  padding-left: 0;
+  margin: 0;
+}
+
+.insights-list li {
+  margin-bottom: 8px;
+  font-size: 0.95rem;
+  color: #555;
+  line-height: 1.4;
+  position: relative;
+  padding-left: 18px;
+}
+
+.insights-list li:before {
+  content: '●';
+  position: absolute;
+  left: 0;
+  color: #5c6bc0;
+}
+
+/* Animation for cell updating */
+@keyframes pulse {
+  0% { opacity: 1; }
+  50% { opacity: 0.6; }
+  100% { opacity: 1; }
+}
+
+.updating .recharts-rectangle {
+  animation: pulse 1s ease-in-out;
+}
+
+/* Tooltip customization */
+.recharts-tooltip-wrapper {
+  z-index: 1000;
+}
+
+.recharts-tooltip-item-name,
+.recharts-tooltip-item-value {
+  font-size: 0.85rem;
+}
+
+/* Make reference line more visible */
+.recharts-reference-line line {
+  stroke-width: 2;
+}
+
+.recharts-reference-line-text {
+  font-size: 0.8rem;
+  font-weight: bold;
+  fill: #d32f2f;
+}
+
+/* Make sure snow bars are visible with a border */
+.weather-chart rect[fill="#FFFFFF"] {
+  stroke: #6b68b2;
+  stroke-width: 1px;
+}
+
+/* Add more space to legend items for better visibility */
+.weather-chart .recharts-legend-item {
+  margin-right: 20px !important;
+}
+
+/* Space between the icon and text */
+.weather-chart .recharts-xAxis text {
+  font-size: 13px;
+}
+
+/* Increase size of weather icons */
+.weather-chart .recharts-xAxis .emoji {
+  font-size: 16px;
+  margin-right: 4px;
+}
+
+/* Add extra margin to the legend to move it down */
+.weather-chart .recharts-legend-wrapper {
+  margin-top: 15px !important;
+}
+
+/* Ensure all weather bars are consistently purple */
+.weather-chart .recharts-bar-rectangles[name="SLA Breach %"] rect {
+  fill: #8884d8 !important;
+  stroke: #6b68b2;
+  stroke-width: 1px;
+}
+
+/* Weather icon specific styling */
+.weather-chart text {
+  font-family: "Segoe UI", Arial, sans-serif;
+}
+
+/* Make wind icon more visible */
+.recharts-xAxis text, .recharts-tooltip-item-name {
+  white-space: pre;
+}
+
+/* Ensure emojis render properly */
+@supports (font-variation-settings: normal) {
+  .weather-chart text {
+    font-family: "Segoe UI Emoji", "Apple Color Emoji", "Segoe UI", sans-serif;
+  }
+}
+
+/* Better styling for weather icons */
+.weather-label {
+  font-size: 14px;
+}
+
+.weather-icon {
+  font-size: 16px !important;
+  display: inline-block;
+  margin-right: 6px;
+  vertical-align: middle;
+}
+
+/* Specific styling for wind icon to ensure it's visible */
+text.weather-label tspan:first-child {
+  font-family: 'Segoe UI Emoji', 'Apple Color Emoji', 'Noto Color Emoji', sans-serif;
+  font-size: 18px !important;
+}
+
+/* Update tooltip to show icons properly */
+.recharts-tooltip-item-name::before {
+  content: attr(data-icon);
+  margin-right: 5px;
+  font-family: 'Segoe UI Emoji', 'Apple Color Emoji', 'Noto Color Emoji', sans-serif;
+}
+
+/* Enhanced styling for simple icons */
+.recharts-xAxis text {
+  font-weight: bold;
+  font-size: 14px !important;
+  font-family: Arial, Helvetica, sans-serif !important;
+  letter-spacing: 1px;
+}
+
+/* Make the Windy wave symbol more prominent */
+.recharts-xAxis text, .recharts-tooltip {
+  font-family: "Arial Unicode MS", "Lucida Sans Unicode", Arial, sans-serif !important;
+}
+
+/* Force the Avg Delivery Time legend marker to be green */
+.weather-chart .recharts-legend-item:nth-child(2) .recharts-surface rect,
+.weather-chart .recharts-default-legend li:nth-child(2) .recharts-surface {
+  fill: #82ca9d !important;
+  stroke: none !important;
+}
+
+/* Apply spacing between legend items */
+.weather-chart .recharts-default-legend .recharts-legend-item {
+  margin-right: 20px !important;
+}
+
+/* Make Avg Delivery Time text not bold in legend but keep green color */
+.weather-chart .recharts-legend-item:nth-child(2) .recharts-legend-item-text,
+.weather-chart .recharts-default-legend li:nth-child(2) span {
+  font-weight: normal !important;
+  color: #82ca9d !important;
+} 
